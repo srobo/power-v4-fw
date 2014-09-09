@@ -88,7 +88,7 @@ int main(void) {
 			delay(1);
 		}
 
-		// I2C
+		// I2C U1
 		battery_voltage();
 
 		// Run LED (also indicates if I2C works)
@@ -96,6 +96,9 @@ int main(void) {
 		delay(DELAY);
 		led_clear(LED_RUN);
 		delay(DELAY);
+
+		// I2C U4
+		f_v();
 
 		// Error LED
 		led_set(LED_ERROR);
