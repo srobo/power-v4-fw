@@ -47,7 +47,16 @@ depend: *.c
 
 .PHONY: all test clean flash
 
-flash: pbv4_test.elf
+flash: pbv4.elf
+	$(OOCD) -f "$(OOCD_BOARD)" \
+	        -c "init" \
+	        -c "reset init" \
+	        -c "stm32f1x mass_erase 0" \
+	        -c "flash write_image $<" \
+	        -c "reset" \
+	        -c "shutdown"
+
+flash_test: pbv4_test.elf
 	$(OOCD) -f "$(OOCD_BOARD)" \
 	        -c "init" \
 	        -c "reset init" \
