@@ -60,7 +60,8 @@ static const char *usb_strings[] = {
 
 static uint8_t usb_data_buffer[128];
 
-
+static uint16_t tmp_wvalue;
+static uint16_t tmp_windex;
 
 static int
 control(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
@@ -76,6 +77,17 @@ control(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
 	// Data and length are in *buf and *len respectively. Output occurs by
 	// modifying what those point at. Initially, just "ping" by returning
 	// the same data that was put in.
+
+	if (req->bmRequestType & USB_REQ_TYPE_IN) { // i.e., input to host
+		*len = 4;
+		uint16_t *foo = (uint16_t*)*buf; // Yay type punning
+		*foo++ = tmp_wvalue;
+		*foo++ = tmp_windex;
+	} else {
+		tmp_wvalue = req->wValue;
+		tmp_windex = req->wIndex;
+	}
+
 	return USBD_REQ_HANDLED;
 }
 
