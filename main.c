@@ -17,6 +17,7 @@
 #include "usart.h"
 #include "pswitch.h"
 #include "analogue.h"
+#include "usb.h"
 
 void
 init()
@@ -28,6 +29,8 @@ init()
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPBEN);
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPCEN);
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPDEN);
+
+	usb_init();
 }
 
 int
