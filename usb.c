@@ -21,15 +21,35 @@ static const struct usb_device_descriptor usb_descr = {
         .bNumConfigurations = 1,
 };
 
+// Linux whines if there are no interfaces, so have a dummy, with no endpoints.
+// We'll use the default control endpoint for everything.
+const struct usb_interface_descriptor dummyiface = {
+        .bLength = USB_DT_INTERFACE_SIZE,
+        .bDescriptorType = USB_DT_INTERFACE,
+        .bInterfaceNumber = 0,
+        .bAlternateSetting = 0,
+        .bNumEndpoints = 0,
+        .bInterfaceClass = 0,
+        .bInterfaceSubClass = 0,
+        .bInterfaceProtocol = 0,
+        .iInterface = 0,
+};
+
+const struct usb_interface usb_ifaces[] = {{
+        .num_altsetting = 1,
+        .altsetting = &dummyiface,
+}};
+
 static const struct usb_config_descriptor usb_config = {
         .bLength = USB_DT_CONFIGURATION_SIZE,
         .bDescriptorType = USB_DT_CONFIGURATION,
         .wTotalLength = 0,
-        .bNumInterfaces = 0,   // No interfaces, we only use default ctrl pipe
+        .bNumInterfaces = 1,   // One dummy, to appease linux
         .bConfigurationValue = 1,
         .iConfiguration = 0,
         .bmAttributes = 0xC0,  // Bit 6 -> self powered
         .bMaxPower = 5,        // Will consume 10ma from USB (a guess)
+	.interface = usb_ifaces,
 };
 
 static const char *usb_strings[] = {
