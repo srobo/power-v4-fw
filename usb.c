@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <libopencm3/usb/usbd.h>
 
-usbd_device *usbd_dev;
+static usbd_device *usbd_dev;
 
-const struct usb_device_descriptor dev_descr = {
+static const struct usb_device_descriptor usb_descr = {
         .bLength = USB_DT_DEVICE_SIZE,
         .bDescriptorType = USB_DT_DEVICE,
         .bcdUSB = 0x0200,
@@ -20,7 +20,7 @@ const struct usb_device_descriptor dev_descr = {
         .bNumConfigurations = 1,
 };
 
-const struct usb_config_descriptor usb_config = {
+static const struct usb_config_descriptor usb_config = {
         .bLength = USB_DT_CONFIGURATION_SIZE,
         .bDescriptorType = USB_DT_CONFIGURATION,
         .wTotalLength = 0,
