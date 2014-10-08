@@ -70,7 +70,7 @@ control(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
 	// Only respond to a single device request, number 64. USB spec 3.1
 	// Section 9.3.1 allows us to define additional requests, and Table 9.5
 	// identifies all reserved requests. So, pick 64, it could be any.
-	if (req->bmRequestType != 64)
+	if (req->bRequest != 64)
 		return USBD_REQ_NEXT_CALLBACK;
 
 	// Data and length are in *buf and *len respectively. Output occurs by
