@@ -19,7 +19,7 @@ LDFLAGS += -lc -lm -Llibopencm3/lib \
 	   -nostartfiles -Wl,--gc-sections,-Map=pbv4.map -mcpu=cortex-m3 \
 	   -mthumb -march=armv7-m -mfix-cortex-m3-ldrd -msoft-float
 
-O_FILES = main.o led.o output.o usart.o analogue.o fw_ver.o
+O_FILES = main.o led.o output.o usart.o analogue.o
 TEST_O_FILES = test.o led.o output.o fan.o smps.o piezo.o button.o battery.o usart.o pswitch.o cdcacm.o analogue.o
 
 all: pbv4.bin pbv4_test.bin
