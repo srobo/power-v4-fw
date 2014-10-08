@@ -40,6 +40,7 @@ main()
 	init();
 
 	while (1) {
+		usb_poll();
 		// Do things
 	}
 }

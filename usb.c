@@ -46,3 +46,10 @@ usb_init()
   usbd_dev = usbd_init(&stm32f103_usb_driver, &usb_descr, &usb_config,
 		 usb_strings, 3, usb_data_buffer, sizeof(usb_data_buffer));
 }
+
+void
+usb_poll()
+{
+
+	usbd_poll(usbd_dev);
+}
