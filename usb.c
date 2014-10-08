@@ -60,6 +60,16 @@ static const char *usb_strings[] = {
 
 static uint8_t usb_data_buffer[128];
 
+
+
+static void
+control(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
+	uint16_t *len,
+	void (**complete)(usbd_device *usbd_dev, struct usb_setup_data *req))
+{
+	return USBD_REQ_NEXT_CALLBACK;
+}
+
 void
 usb_init()
 {
@@ -69,6 +79,13 @@ usb_init()
 
   usbd_dev = usbd_init(&stm32f103_usb_driver, &usb_descr, &usb_config,
 		 usb_strings, 3, usb_data_buffer, sizeof(usb_data_buffer));
+
+  // We want to handle device requests sent to the default endpoint: match the
+  // device request type (0), with zero recpient address. Use type + recipient
+  // mask to filter requests.
+  usbd_register_control_callback(usbd_dev, USB_REQ_TYPE_DEVICE,
+		  USB_REQ_TYPE_TYPE | USB_REQ_TYPE_RECIPIENT,
+		  control);
 
   gpio_set(GPIOA, GPIO8);
 }
