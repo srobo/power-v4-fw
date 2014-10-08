@@ -36,3 +36,13 @@ static const char *usb_strings[] = {
         "Power board v4",
         "0123456789",          // XXX serial numbers
 };
+
+static uint8_t usb_data_buffer[128];
+
+void
+usb_init()
+{
+
+  usbd_dev = usbd_init(&stm32f103_usb_driver, &usb_descr, &usb_config,
+		 usb_strings, 3, usb_data_buffer, sizeof(usb_data_buffer));
+}
