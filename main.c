@@ -31,6 +31,16 @@ init()
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPDEN);
 
 	usb_init();
+	led_init();
+	output_init();
+	fan_init();
+	smps_init();
+	piezo_init();
+	button_init();
+	battery_init();
+	usart_init();
+	pswitch_init();
+	analogue_init();
 }
 
 int
