@@ -3,6 +3,7 @@
 #include <libopencm3/stm32/gpio.h>
 
 #include "usb.h"
+#include "output.h"
 
 static usbd_device *usbd_dev;
 
@@ -83,17 +84,35 @@ handle_read_req(struct usb_setup_data *req)
 	}
 }
 
+static void
+set_output(int id, uint16_t param)
+{
+
+	if (param == 0) {
+		// Set output off
+		output_off(id);
+	} else {
+		output_on(id);
+	}
+}
+
 static int
 handle_write_req(struct usb_setup_data *req)
 {
 
 	switch (req->wIndex) {
 	case POWERBOARD_WRITE_OUTPUT0:
+		set_output(0, req->wValue); break;
 	case POWERBOARD_WRITE_OUTPUT1:
+		set_output(1, req->wValue); break;
 	case POWERBOARD_WRITE_OUTPUT2:
+		set_output(2, req->wValue); break;
 	case POWERBOARD_WRITE_OUTPUT3:
+		set_output(3, req->wValue); break;
 	case POWERBOARD_WRITE_OUTPUT4:
+		set_output(4, req->wValue); break;
 	case POWERBOARD_WRITE_OUTPUT5:
+		set_output(5, req->wValue); break;
 	case POWERBOARD_WRITE_RUNLED:
 	case POWERBOARD_WRITE_ERRORLED:
 	default:
