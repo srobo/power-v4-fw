@@ -4,6 +4,7 @@
 
 #include "usb.h"
 #include "output.h"
+#include "led.h"
 
 static usbd_device *usbd_dev;
 
@@ -96,6 +97,18 @@ set_output(int id, uint16_t param)
 	}
 }
 
+static void
+set_led(int id, uint16_t param)
+{
+
+	if (param == 0) {
+		// Set led off
+		led_clear(id);
+	} else {
+		led_set(id);
+	}
+}
+
 static int
 handle_write_req(struct usb_setup_data *req)
 {
@@ -114,7 +127,9 @@ handle_write_req(struct usb_setup_data *req)
 	case POWERBOARD_WRITE_OUTPUT5:
 		set_output(5, req->wValue); break;
 	case POWERBOARD_WRITE_RUNLED:
+		set_led(LED_RUN, req->wValue); break;
 	case POWERBOARD_WRITE_ERRORLED:
+		set_led(LED_ERROR, req->wValue); break;
 	default:
 		return USBD_REQ_NOTSUPP; // Will result in a USB stall
 	}
