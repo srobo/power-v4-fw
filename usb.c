@@ -83,6 +83,8 @@ handle_read_req(struct usb_setup_data *req)
 	default:
 		return USBD_REQ_NOTSUPP; // Will result in a USB stall
 	}
+
+	return USBD_REQ_HANDLED;
 }
 
 static void
@@ -133,6 +135,8 @@ handle_write_req(struct usb_setup_data *req)
 	default:
 		return USBD_REQ_NOTSUPP; // Will result in a USB stall
 	}
+
+	return USBD_REQ_HANDLED;
 }
 
 static int
