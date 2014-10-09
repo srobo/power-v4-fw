@@ -70,8 +70,8 @@ if handle == None:
     sys.exit(1)
 
 if is_read:
-    ret = handle.controlRead(0x80, 64, req_id, 0, 4)
+    ret = handle.controlRead(0x80, 64, 0, req_id, 4)
     a, b = struct.unpack("hh", ret)
     print "{:02X}, {:02X}".format(a, b)
 else:
-    handle.controlWrite(0, 64, req_id, args.argument, "")
+    handle.controlWrite(0, 64, args.argument, req_id, "")
