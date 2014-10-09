@@ -8,7 +8,7 @@ from usb1 import *
 parser = argparse.ArgumentParser()
 parser.add_argument("reqtype", help="read or write")
 parser.add_argument("reqname", help="name of request to make")
-parser.add_argument("argument", help="For writes, an output argument", nargs='?', default=0, type=int)
+parser.add_argument("argument", help="For writes, an output argument", nargs='?', default=-1, type=int)
 args = parser.parse_args()
 
 write_ids = {
@@ -41,6 +41,9 @@ if args.reqtype == "read":
 elif args.reqtype == "write":
     req_map = write_ids
     is_read = False
+    if len(sys.argv) != 4:
+        print >>sys.stderr, "You need to pass an argument to write"
+        sys.exit(1)
 else:
     print >>sys.stderr, "Unrecognized request type"
     sys.exit(1)
