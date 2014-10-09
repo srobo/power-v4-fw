@@ -2,6 +2,8 @@
 #include <libopencm3/usb/usbd.h>
 #include <libopencm3/stm32/gpio.h>
 
+#include "usb.h"
+
 static usbd_device *usbd_dev;
 
 static const struct usb_device_descriptor usb_descr = {
@@ -60,8 +62,44 @@ static const char *usb_strings[] = {
 
 static uint8_t usb_data_buffer[128];
 
-static uint16_t tmp_wvalue;
-static uint16_t tmp_windex;
+static int
+handle_read_req(struct usb_setup_data *req)
+{
+
+	// Precise command, as enumerated in usb.h, is in wIndex
+	switch (req->wIndex) {
+	case POWERBOARD_READ_OUTPUT1:
+	case POWERBOARD_READ_OUTPUT2:
+	case POWERBOARD_READ_OUTPUT3:
+	case POWERBOARD_READ_OUTPUT4:
+	case POWERBOARD_READ_OUTPUT5:
+	case POWERBOARD_READ_OUTPUT6:
+	case POWERBOARD_READ_5VRAIL:
+	case POWERBOARD_READ_BATT:
+	case POWERBOARD_READ_BUTTON:
+	case POWERBOARD_READ_FWVER:
+	default:
+		return USBD_REQ_NOTSUPP; // Will result in a USB stall
+	}
+}
+
+static int
+handle_write_req(struct usb_setup_data *req)
+{
+
+	switch (req->wIndex) {
+	case POWERBOARD_WRITE_OUTPUT1:
+	case POWERBOARD_WRITE_OUTPUT2:
+	case POWERBOARD_WRITE_OUTPUT3:
+	case POWERBOARD_WRITE_OUTPUT4:
+	case POWERBOARD_WRITE_OUTPUT5:
+	case POWERBOARD_WRITE_OUTPUT6:
+	case POWERBOARD_WRITE_RUNLED:
+	case POWERBOARD_WRITE_ERRORLED:
+	default:
+		return USBD_REQ_NOTSUPP; // Will result in a USB stall
+	}
+}
 
 static int
 control(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
@@ -75,20 +113,13 @@ control(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
 		return USBD_REQ_NEXT_CALLBACK;
 
 	// Data and length are in *buf and *len respectively. Output occurs by
-	// modifying what those point at. Initially, just "ping" by returning
-	// the same data that was put in.
+	// modifying what those point at.
 
 	if (req->bmRequestType & USB_REQ_TYPE_IN) { // i.e., input to host
-		*len = 4;
-		uint16_t *foo = (uint16_t*)*buf; // Yay type punning
-		*foo++ = tmp_wvalue;
-		*foo++ = tmp_windex;
+		return handle_read_req(req);
 	} else {
-		tmp_wvalue = req->wValue;
-		tmp_windex = req->wIndex;
+		return handle_write_req(req);
 	}
-
-	return USBD_REQ_HANDLED;
 }
 
 static void
