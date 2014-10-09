@@ -3,7 +3,7 @@
 import sys
 import struct
 import argparse
-from usb1 import *
+from usb1 import * # In lieu of packages for pyusb, I `pip install libusb1`'d.
 
 parser = argparse.ArgumentParser()
 parser.add_argument("reqtype", help="read or write")
