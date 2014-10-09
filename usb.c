@@ -68,12 +68,12 @@ handle_read_req(struct usb_setup_data *req)
 
 	// Precise command, as enumerated in usb.h, is in wIndex
 	switch (req->wIndex) {
+	case POWERBOARD_READ_OUTPUT0:
 	case POWERBOARD_READ_OUTPUT1:
 	case POWERBOARD_READ_OUTPUT2:
 	case POWERBOARD_READ_OUTPUT3:
 	case POWERBOARD_READ_OUTPUT4:
 	case POWERBOARD_READ_OUTPUT5:
-	case POWERBOARD_READ_OUTPUT6:
 	case POWERBOARD_READ_5VRAIL:
 	case POWERBOARD_READ_BATT:
 	case POWERBOARD_READ_BUTTON:
@@ -88,12 +88,12 @@ handle_write_req(struct usb_setup_data *req)
 {
 
 	switch (req->wIndex) {
+	case POWERBOARD_WRITE_OUTPUT0:
 	case POWERBOARD_WRITE_OUTPUT1:
 	case POWERBOARD_WRITE_OUTPUT2:
 	case POWERBOARD_WRITE_OUTPUT3:
 	case POWERBOARD_WRITE_OUTPUT4:
 	case POWERBOARD_WRITE_OUTPUT5:
-	case POWERBOARD_WRITE_OUTPUT6:
 	case POWERBOARD_WRITE_RUNLED:
 	case POWERBOARD_WRITE_ERRORLED:
 	default:

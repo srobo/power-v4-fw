@@ -12,23 +12,23 @@ parser.add_argument("argument", help="For writes, an output argument", nargs='?'
 args = parser.parse_args()
 
 write_ids = {
-        'output1' : 0,
-        'output2' : 1,
-        'output3' : 2,
-        'output4' : 3,
-        'output5' : 4,
-        'output6' : 5,
+        'output0' : 0,
+        'output1' : 1,
+        'output2' : 2,
+        'output3' : 3,
+        'output4' : 4,
+        'output5' : 5,
         'runled' : 6,
         'errorled' : 7,
         }
 
 read_ids = {
-        'output1' : 0,
-        'output2' : 1,
-        'output3' : 2,
-        'output4' : 3,
-        'output5' : 4,
-        'output6' : 5,
+        'output0' : 0,
+        'output1' : 1,
+        'output2' : 2,
+        'output3' : 3,
+        'output4' : 4,
+        'output5' : 5,
         '5vrail' : 6,
         'batt' : 7,
         'button' : 8,
