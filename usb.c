@@ -5,6 +5,7 @@
 #include "usb.h"
 #include "output.h"
 #include "led.h"
+#include "battery.h"
 
 static usbd_device *usbd_dev;
 
@@ -65,8 +66,9 @@ static const char *usb_strings[] = {
 static uint8_t usb_data_buffer[128];
 
 static int
-handle_read_req(struct usb_setup_data *req)
+handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 {
+	uint16_t *u16ptr;
 
 	// Precise command, as enumerated in usb.h, is in wIndex
 	switch (req->wIndex) {
@@ -77,7 +79,29 @@ handle_read_req(struct usb_setup_data *req)
 	case POWERBOARD_READ_OUTPUT4:
 	case POWERBOARD_READ_OUTPUT5:
 	case POWERBOARD_READ_5VRAIL:
+		if (*len < 4)
+			return USBD_REQ_NOTSUPP;
+
+		*len = 4;
+
+		// Clocking i2c can take a lot of time!
+		u16ptr = (uint16_t*) *buf;
+		*u16ptr++ = f_i();
+		*u16ptr++ = f_v();
+		break;
+
 	case POWERBOARD_READ_BATT:
+		if (*len < 4)
+			return USBD_REQ_NOTSUPP;
+
+		*len = 4;
+
+		// Clocking i2c can take a lot of time!
+		u16ptr = (uint16_t*) *buf;
+		*u16ptr++ = battery_current();
+		*u16ptr++ = battery_voltage();
+		break;
+
 	case POWERBOARD_READ_BUTTON:
 	case POWERBOARD_READ_FWVER:
 	default:
@@ -154,7 +178,7 @@ control(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
 	// modifying what those point at.
 
 	if (req->bmRequestType & USB_REQ_TYPE_IN) { // i.e., input to host
-		return handle_read_req(req);
+		return handle_read_req(req, len, buf);
 	} else {
 		return handle_write_req(req);
 	}
