@@ -86,7 +86,7 @@ handle_read_req(struct usb_setup_data *req)
 }
 
 static void
-set_output(int id, uint16_t param)
+write_output(int id, uint16_t param)
 {
 
 	if (param == 0) {
@@ -98,7 +98,7 @@ set_output(int id, uint16_t param)
 }
 
 static void
-set_led(int id, uint16_t param)
+write_led(int id, uint16_t param)
 {
 
 	if (param == 0) {
@@ -115,21 +115,21 @@ handle_write_req(struct usb_setup_data *req)
 
 	switch (req->wIndex) {
 	case POWERBOARD_WRITE_OUTPUT0:
-		set_output(0, req->wValue); break;
+		write_output(0, req->wValue); break;
 	case POWERBOARD_WRITE_OUTPUT1:
-		set_output(1, req->wValue); break;
+		write_output(1, req->wValue); break;
 	case POWERBOARD_WRITE_OUTPUT2:
-		set_output(2, req->wValue); break;
+		write_output(2, req->wValue); break;
 	case POWERBOARD_WRITE_OUTPUT3:
-		set_output(3, req->wValue); break;
+		write_output(3, req->wValue); break;
 	case POWERBOARD_WRITE_OUTPUT4:
-		set_output(4, req->wValue); break;
+		write_output(4, req->wValue); break;
 	case POWERBOARD_WRITE_OUTPUT5:
-		set_output(5, req->wValue); break;
+		write_output(5, req->wValue); break;
 	case POWERBOARD_WRITE_RUNLED:
-		set_led(LED_RUN, req->wValue); break;
+		write_led(LED_RUN, req->wValue); break;
 	case POWERBOARD_WRITE_ERRORLED:
-		set_led(LED_ERROR, req->wValue); break;
+		write_led(LED_ERROR, req->wValue); break;
 	default:
 		return USBD_REQ_NOTSUPP; // Will result in a USB stall
 	}
