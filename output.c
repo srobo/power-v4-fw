@@ -38,7 +38,7 @@ void output_init(void) {
 	}
 
 	// Then enable the first IC.
-	gpio_set(OUTPUT_CSDIS_PORT[0], OUTPUT_CSDIS_PIN[0]);
+	gpio_clear(OUTPUT_CSDIS_PORT[0], OUTPUT_CSDIS_PIN[0]);
 }
 
 void output_on(uint8_t n) {
@@ -67,7 +67,15 @@ void current_sense_recvsamples(uint32_t samp1, uint32_t samp2)
 
 	current_sense_samples[csread_ic][0] = samp1;
 	current_sense_samples[csread_ic][1] = samp2;
+
+	// Disable current sense output from the current IC
+	gpio_set(OUTPUT_CSDIS_PORT[csread_ic], OUTPUT_CSDIS_PIN[csread_ic]);
+
+	// Switch to the next IC
 	csread_ic++;
 	if (csread_ic > CSREAD_MAX)
 		csread_ic = 0;
+
+	// Enable current sense
+	gpio_clear(OUTPUT_CSDIS_PORT[csread_ic], OUTPUT_CSDIS_PIN[csread_ic]);
 }
