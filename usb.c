@@ -68,6 +68,7 @@ static uint8_t usb_data_buffer[128];
 static int
 handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 {
+	int result = USBD_REQ_NOTSUPP; // Will result in a USB stall
 	uint16_t *u16ptr;
 
 	// Precise command, as enumerated in usb.h, is in wIndex
@@ -80,7 +81,7 @@ handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 	case POWERBOARD_READ_OUTPUT5:
 	case POWERBOARD_READ_5VRAIL:
 		if (*len < 4)
-			return USBD_REQ_NOTSUPP;
+			break;
 
 		*len = 4;
 
@@ -88,11 +89,12 @@ handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 		u16ptr = (uint16_t*) *buf;
 		*u16ptr++ = f_vshunt();
 		*u16ptr++ = f_vbus();
+		result = USBD_REQ_HANDLED;
 		break;
 
 	case POWERBOARD_READ_BATT:
 		if (*len < 4)
-			return USBD_REQ_NOTSUPP;
+			break;
 
 		*len = 4;
 
@@ -100,15 +102,16 @@ handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 		u16ptr = (uint16_t*) *buf;
 		*u16ptr++ = battery_vshunt();
 		*u16ptr++ = battery_vbus();
+		result = USBD_REQ_HANDLED;
 		break;
 
 	case POWERBOARD_READ_BUTTON:
 	case POWERBOARD_READ_FWVER:
 	default:
-		return USBD_REQ_NOTSUPP; // Will result in a USB stall
+		break;
 	}
 
-	return USBD_REQ_HANDLED;
+	return result;
 }
 
 static void
