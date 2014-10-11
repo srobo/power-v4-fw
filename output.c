@@ -95,3 +95,35 @@ void current_sense_poll()
 		gpio_clear(OUTPUT_CSDIS_PORT[csread_ic], OUTPUT_CSDIS_PIN[csread_ic]);
 	}
 }
+
+uint32_t current_sense_read(int output)
+{
+	uint32_t result = 0;
+	// Don't allow ADC intr to fire when we're reading
+	nvic_disable_irq(NVIC_ADC1_2_IRQ);
+	switch (output) {
+	case 0:
+		result = current_sense_samples[0][0] +
+			current_sense_samples[0][1];
+		break;
+	case 1:
+		result = current_sense_samples[1][0] +
+			current_sense_samples[1][1];
+		break;
+	case 2:
+		result = current_sense_samples[2][0];
+		break;
+	case 3:
+		result = current_sense_samples[2][1];
+		break;
+	case 4:
+		result = current_sense_samples[3][0];
+		break;
+	case 5:
+		result = current_sense_samples[3][0];
+		break;
+	}
+	nvic_enable_irq(NVIC_ADC1_2_IRQ);
+
+	return result;
+}
