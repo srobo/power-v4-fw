@@ -74,6 +74,9 @@ void current_sense_recvsamples(uint32_t samp1, uint32_t samp2)
 	output_read_done = true;
 }
 
+// XXX -- there's the risk that we'll update the target output IC just before
+// the ADC interrupt fires, storing the wrong sample into the wrong place. This
+// should be addressed later.
 void current_sense_poll()
 {
 	if (output_read_done) {
