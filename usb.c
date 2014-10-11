@@ -65,17 +65,14 @@ static const char *usb_strings[] = {
 
 static uint8_t usb_data_buffer[128];
 
-// XXX hacks for calibration
-extern uint32_t c, d;
-
 static int
-read_from_ptr(int *len, uint8_t **buf, uint32_t *ptr)
+read_output(int *len, uint8_t **buf, int output)
 {
 	if (*len < 4)
 		return USBD_REQ_NOTSUPP;
 
 	uint32_t *u32ptr = (uint32_t*)*buf;
-	*u32ptr = *ptr;
+	*u32ptr = current_sense_read(output);
 	*len = 4;
 	return USBD_REQ_HANDLED;
 }
@@ -89,15 +86,17 @@ handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 	// Precise command, as enumerated in usb.h, is in wIndex
 	switch (req->wIndex) {
 	case POWERBOARD_READ_OUTPUT0:
+		result = read_output(len, buf, 0); break;
 	case POWERBOARD_READ_OUTPUT1:
-		break;
+		result = read_output(len, buf, 1); break;
 	case POWERBOARD_READ_OUTPUT2:
-		result = read_from_ptr(len, buf, &c); break;
+		result = read_output(len, buf, 2); break;
 	case POWERBOARD_READ_OUTPUT3:
-		result = read_from_ptr(len, buf, &d); break;
+		result = read_output(len, buf, 3); break;
 	case POWERBOARD_READ_OUTPUT4:
+		result = read_output(len, buf, 4); break;
 	case POWERBOARD_READ_OUTPUT5:
-		break;
+		result = read_output(len, buf, 5); break;
 	case POWERBOARD_READ_5VRAIL:
 		if (*len < 4)
 			break;
