@@ -91,8 +91,8 @@ static uint16_t f_reg(uint8_t r)
 	return val;
 }
 
-uint16_t f_v() { return f_reg(0x02); }
-uint16_t f_i() { return f_reg(0x01); }
+uint16_t f_vshunt() { return f_reg(0x02); }
+uint16_t f_vbus() { return f_reg(0x01); }
 
 static uint16_t battery_reg(uint8_t r)
 {
@@ -136,5 +136,5 @@ static uint16_t battery_reg(uint8_t r)
 	return val;
 }
 
-uint16_t battery_current() { return battery_reg(0x01); }
-uint16_t battery_voltage() { return battery_reg(0x02); }
+uint16_t battery_vshunt() { return battery_reg(0x01); }
+uint16_t battery_vbus() { return battery_reg(0x02); }

@@ -86,8 +86,8 @@ handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 
 		// Clocking i2c can take a lot of time!
 		u16ptr = (uint16_t*) *buf;
-		*u16ptr++ = f_i();
-		*u16ptr++ = f_v();
+		*u16ptr++ = f_vshunt();
+		*u16ptr++ = f_vbus();
 		break;
 
 	case POWERBOARD_READ_BATT:
@@ -98,8 +98,8 @@ handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 
 		// Clocking i2c can take a lot of time!
 		u16ptr = (uint16_t*) *buf;
-		*u16ptr++ = battery_current();
-		*u16ptr++ = battery_voltage();
+		*u16ptr++ = battery_vshunt();
+		*u16ptr++ = battery_vbus();
 		break;
 
 	case POWERBOARD_READ_BUTTON:
