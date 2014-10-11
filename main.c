@@ -50,7 +50,8 @@ main()
 	init();
 
 	while (1) {
-		usb_poll();
 		// Do things
+		usb_poll();
+		current_sense_poll();
 	}
 }
