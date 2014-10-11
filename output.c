@@ -120,7 +120,7 @@ uint32_t current_sense_read(int output)
 		result = current_sense_samples[3][0];
 		break;
 	case 5:
-		result = current_sense_samples[3][0];
+		result = current_sense_samples[3][1];
 		break;
 	}
 	nvic_enable_irq(NVIC_ADC1_2_IRQ);
