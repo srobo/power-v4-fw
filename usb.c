@@ -66,7 +66,7 @@ static const char *usb_strings[] = {
 static uint8_t usb_data_buffer[128];
 
 // XXX hacks for calibration
-extern uint32_t a, b, c, d;
+extern uint32_t c, d;
 
 static int
 read_from_ptr(int *len, uint8_t **buf, uint32_t *ptr)
@@ -89,9 +89,8 @@ handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 	// Precise command, as enumerated in usb.h, is in wIndex
 	switch (req->wIndex) {
 	case POWERBOARD_READ_OUTPUT0:
-		result = read_from_ptr(len, buf, &a); break;
 	case POWERBOARD_READ_OUTPUT1:
-		result = read_from_ptr(len, buf, &b); break;
+		break;
 	case POWERBOARD_READ_OUTPUT2:
 		result = read_from_ptr(len, buf, &c); break;
 	case POWERBOARD_READ_OUTPUT3:

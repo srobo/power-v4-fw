@@ -1,6 +1,7 @@
 #include "analogue.h"
 
 #include "cdcacm.h"
+#include "output.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,7 +15,7 @@
 #include <libopencm3/stm32/timer.h>
 #include <libopencm3/stm32/dbgmcu.h>
 
-uint32_t a, b, c, d;
+uint32_t c, d;
 
 void analogue_init(void) {
 	gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_ANALOG, 0xff);
@@ -72,8 +73,10 @@ extern usbd_device *usbd_dev;
 
 void adc1_2_isr(void) {
 	ADC1_SR = 0;
-	a = adc_read_injected(ADC1, 1);
-	b = adc_read_injected(ADC1, 2);
+	uint32_t tmp1 = adc_read_injected(ADC1, 1);
+	uint32_t tmp2 = adc_read_injected(ADC1, 2);
 	c = adc_read_injected(ADC1, 3);
 	d = adc_read_injected(ADC1, 4);
+
+	current_sense_recvsamples(tmp1, tmp2);
 }
