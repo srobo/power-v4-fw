@@ -71,7 +71,14 @@ if handle == None:
 
 if is_read:
     ret = handle.controlRead(0x80, 64, 0, req_id, 8)
-    a, = struct.unpack("i", ret)
-    print "{0}".format(a)
+    if len(ret) == 4:
+        a, = struct.unpack("i", ret)
+        print "{0}".format(a)
+    elif len(ret) == 8:
+        a, b = struct.unpack("ii", ret)
+        print "{0} {0}".format(a, b)
+    else:
+        print >>sys.stderr, "Short read (or otherwise), board returned {0} bytes".format(len(ret))
+        sys.exit(1)
 else:
     handle.controlWrite(0, 64, args.argument, req_id, "")
