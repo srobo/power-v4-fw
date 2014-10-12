@@ -81,7 +81,8 @@ static int
 handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 {
 	int result = USBD_REQ_NOTSUPP; // Will result in a USB stall
-	uint16_t *u16ptr, *u32ptr;
+	uint16_t *u16ptr;
+	uint32_t *u32ptr;
 
 	// Precise command, as enumerated in usb.h, is in wIndex
 	switch (req->wIndex) {

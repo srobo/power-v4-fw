@@ -72,7 +72,6 @@ if handle == None:
 if is_read:
     ret = handle.controlRead(0x80, 64, 0, req_id, 8)
     a, = struct.unpack("i", ret)
-    a = a & 0xFFFF
     print "{0}".format(a)
 else:
     handle.controlWrite(0, 64, args.argument, req_id, "")
