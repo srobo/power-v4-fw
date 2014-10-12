@@ -112,14 +112,14 @@ handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 		break;
 
 	case POWERBOARD_READ_BATT:
-		if (*len < 4)
+		if (*len < 8)
 			break;
 
-		*len = 4;
+		*len = 8;
 
 		u32ptr = (uint32_t*) *buf;
 		*u32ptr++ = battery_current();
-		// XXX read voltage!
+		*u32ptr++ = battery_vbus();
 		result = USBD_REQ_HANDLED;
 		break;
 
