@@ -137,7 +137,16 @@ static uint16_t battery_reg(uint8_t r)
 }
 
 uint16_t battery_vshunt() { return battery_reg(0x01); }
-uint16_t battery_vbus() { return battery_reg(0x02); }
+
+uint16_t battery_vbus()
+{
+	uint16_t vbus = battery_reg(0x02);
+	// Lower 3 bits are status bits. Rest is the voltage, measured in units
+	// of 4mV. So, mask the lower 3 bits, then shift down by one.
+	vbus &= 0xFFF8;
+	vbus >>= 1;
+	return vbus;
+}
 
 uint32_t battery_current()
 {
