@@ -125,5 +125,24 @@ uint32_t current_sense_read(int output)
 	}
 	nvic_enable_irq(NVIC_ADC1_2_IRQ);
 
+	// Convert this reading into milliamps. The specific ratio of output
+	// current to current-sense-current is device specific, and
+	// unfortunately appears to be output or IC specific on the power
+	// boards. XXX, test with more than one board.
+	// I (jmorse) have made some current measurements, and the ratio
+	// doesn't appear to be linear either. As supplied current increases,
+	// the ratio drops. Right now I can't test at high  currents due to
+	// lack of supply, but when drawing 3A, each ADC lsb represents about
+	// 7.5mA.
+	// This is a reasonable approximation to work with. If the ratio
+	// continues to drop at higher currents, then it's an overapproximation,
+	// which is safe.
+	// So, multiply the output by 7.5. Because this is a uC, use a cooked
+	// approach.
+
+	uint32_t tmp_result = 7*result;
+	result >>=1;
+	tmp_result += result;
+	result = tmp_result;
 	return result;
 }
