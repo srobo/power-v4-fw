@@ -76,7 +76,7 @@ if is_read:
         print "{0}".format(a)
     elif len(ret) == 8:
         a, b = struct.unpack("ii", ret)
-        print "{0} {0}".format(a, b)
+        print "{0} {1}".format(a, b)
     else:
         print >>sys.stderr, "Short read (or otherwise), board returned {0} bytes".format(len(ret))
         sys.exit(1)
