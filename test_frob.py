@@ -70,7 +70,7 @@ if handle == None:
     sys.exit(1)
 
 if is_read:
-    ret = handle.controlRead(0x80, 64, 0, req_id, 4)
+    ret = handle.controlRead(0x80, 64, 0, req_id, 8)
     a, = struct.unpack("i", ret)
     a = a & 0xFFFF
     print "{0}".format(a)
