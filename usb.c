@@ -81,7 +81,7 @@ static int
 handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 {
 	int result = USBD_REQ_NOTSUPP; // Will result in a USB stall
-	uint16_t *u16ptr;
+	uint16_t *u16ptr, *u32ptr;
 
 	// Precise command, as enumerated in usb.h, is in wIndex
 	switch (req->wIndex) {
@@ -116,10 +116,9 @@ handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 
 		*len = 4;
 
-		// Clocking i2c can take a lot of time!
-		u16ptr = (uint16_t*) *buf;
-		*u16ptr++ = battery_vshunt();
-		*u16ptr++ = battery_vbus();
+		u32ptr = (uint32_t*) *buf;
+		*u32ptr++ = battery_current();
+		// XXX read voltage!
 		result = USBD_REQ_HANDLED;
 		break;
 
