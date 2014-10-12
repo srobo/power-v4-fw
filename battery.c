@@ -144,14 +144,18 @@ uint32_t battery_current()
 	uint16_t vshunt = battery_vshunt();
 
 	// The measurement just taken is measured in 10uV units over the 500uO
-	// resistor pair on the battery rail. Multiplying by 2000 would give us
-	// the current in uA; instead, multiply by 2 to give us the current in
-	// mA, avoiding a divide.
-	uint32_t current = vshunt * 2;
+	// resistor pair on the battery rail. I = V/R, and R being small,
+	// multiply by 20 to give a figure measured in units of 1mA.
+	uint32_t current = vshunt * 20;
 
 	// Additionally, the current drawn is consistently reported as being
 	// 800mA over reality; adjust this amount.
-	current -= 800;
+	if (current < 800) {
+		// It's also super jittery, and might dip below this offset
+		current = 1;
+	} else {
+		current -= 800;
+	}
 
 	return current;
 }
