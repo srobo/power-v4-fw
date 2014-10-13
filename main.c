@@ -113,6 +113,14 @@ main()
 
 	init();
 
+	// Inject an arbitary delay. In several, unreproducable conditions,
+	// I've experienced the power board blocking on I2C, apparently
+	// never able to generate a start condition. I don't know why this is,
+	// but it only triggers in the main polling loop, not via USB requests.
+	// This suggests to me it's some kind of initialization-time problem
+	// with the INA219, which provides no reset/setup time in it's datasheet
+	delay(1000000);
+
 	while (1) {
 		// Do things
 		usb_poll();
