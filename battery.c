@@ -1,8 +1,12 @@
+#include <stdbool.h>
+
 #include "battery.h"
 
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/i2c.h>
+#include <libopencm3/stm32/timer.h>
+#include <libopencm3/cm3/nvic.h>
 
 #include "led.h"
 
@@ -13,13 +17,28 @@ void battery_init(void) {
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_AFIOEN);
 
 	i2c_reset(I2C1);
-	i2c_set_clock_frequency(I2C1, I2C_CR2_FREQ_36MHZ);
+	i2c_set_clock_frequency(I2C1, I2C_CR2_FREQ_2MHZ);
 	i2c_set_fast_mode(I2C1);
 	i2c_set_ccr(I2C1, 30);
 	i2c_set_trise(I2C1, 0x0b);
 	i2c_peripheral_enable(I2C1);
-}
 
+	// We poll the battery current sense / voltage sense to see whether
+	// something is wrong. Reads that are too close together cause the
+	// INA219 to croak. Therefore set up a timer to periodically trigger
+	// reads.
+	// The IC settles readings at 2KHz; enable a timer @ 4Khz and read
+	// voltage / current every other tick.
+	rcc_periph_clock_enable(RCC_TIM2);
+	timer_reset(TIM2);
+	timer_set_prescaler(TIM2, 1799); // 72Mhz -> 40Khz
+	timer_set_period(TIM2, 10); // 10 ticks -> 4Khz
+	nvic_enable_irq(NVIC_TIM2_IRQ);
+	nvic_set_priority(NVIC_TIM2_IRQ, 1);
+	timer_enable_update_event(TIM2);
+	timer_enable_irq(TIM2, TIM_DIER_UIE);
+	timer_enable_counter(TIM2);
+}
 
 static uint32_t reg32 __attribute__((unused));
 static uint32_t i2c = I2C1;
@@ -167,4 +186,49 @@ uint32_t battery_current()
 	}
 
 	return current;
+}
+
+volatile bool batt_do_read = false;
+uint32_t batt_read_current = 0;
+uint32_t batt_read_voltage = 0;
+enum { BATT_READ_CURR, BATT_READ_VOLT } batt_read_state = BATT_READ_CURR;
+
+void tim2_isr(void)
+{
+	batt_do_read = true;
+	return;
+}
+
+void battery_poll()
+{
+	bool do_read = false;
+
+	nvic_disable_irq(NVIC_TIM2_IRQ);
+	if (batt_do_read) {
+		// First, reset the counter, so there's another 250uS til the
+		// next read
+		timer_set_counter(TIM2, 0);
+		// Then reset the read-flag
+		batt_do_read = false;
+
+		do_read = true;
+	}
+	nvic_enable_irq(NVIC_TIM2_IRQ);
+
+	if (!do_read)
+		return;
+
+	// We're clear to read.
+	switch (batt_read_state) {
+	case BATT_READ_CURR:
+		batt_read_state = BATT_READ_VOLT;
+		batt_read_current = battery_current();
+		break;
+	case BATT_READ_VOLT:
+		batt_read_state = BATT_READ_CURR;
+		batt_read_voltage = battery_vbus();
+		break;
+	}
+
+	return;
 }

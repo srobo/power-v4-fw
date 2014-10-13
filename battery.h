@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 void battery_init(void);
+void battery_poll(void);
 
 uint16_t battery_vshunt(void);
 uint16_t battery_vbus(void);
