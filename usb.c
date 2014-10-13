@@ -118,8 +118,8 @@ handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 		*len = 8;
 
 		u32ptr = (uint32_t*) *buf;
-		*u32ptr++ = battery_current();
-		*u32ptr++ = battery_vbus();
+		*u32ptr++ = read_battery_current();
+		*u32ptr++ = read_battery_voltage();
 		result = USBD_REQ_HANDLED;
 		break;
 

@@ -81,7 +81,7 @@ check_batt_undervolt()
 void
 check_batt_current_limit()
 {
-	uint32_t current = battery_current();
+	uint32_t current = read_battery_current();
 	if (current >= 40000) {
 		// Something is wrong.
 		shut_down_everything();

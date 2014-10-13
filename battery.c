@@ -167,7 +167,7 @@ uint16_t battery_vbus()
 	return vbus;
 }
 
-uint32_t battery_current()
+static uint32_t battery_current()
 {
 	uint16_t vshunt = battery_vshunt();
 
@@ -232,4 +232,15 @@ void battery_poll()
 	}
 
 	return;
+}
+
+// Upon read, return the most recently sampled result.
+uint16_t read_battery_voltage()
+{
+	return batt_read_voltage;
+}
+
+uint32_t read_battery_current()
+{
+	return batt_read_current;
 }
