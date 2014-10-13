@@ -196,6 +196,7 @@ enum { BATT_READ_CURR, BATT_READ_VOLT } batt_read_state = BATT_READ_CURR;
 void tim2_isr(void)
 {
 	batt_do_read = true;
+	TIM_SR(TIM2) = 0; // Inexplicably does not reset
 	return;
 }
 
