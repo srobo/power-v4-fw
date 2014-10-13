@@ -17,7 +17,7 @@ void battery_init(void) {
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_AFIOEN);
 
 	i2c_reset(I2C1);
-	i2c_set_clock_frequency(I2C1, I2C_CR2_FREQ_2MHZ);
+	i2c_set_clock_frequency(I2C1, I2C_CR2_FREQ_36MHZ);
 	i2c_set_fast_mode(I2C1);
 	i2c_set_ccr(I2C1, 30);
 	i2c_set_trise(I2C1, 0x0b);
