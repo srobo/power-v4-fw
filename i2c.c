@@ -23,7 +23,6 @@ enum {
 static uint8_t ina_addr;   // Address on the bus. 0x40 for batt, 0x41 for smps
 static uint8_t ina_reg;    // Which INA reg to read. 1 = vshunt, 2 = vbus
 static uint16_t ina_result;// Read value is read here.
-static bool i2c_error;     // Acknowledge failure or bus failure occurred.
 
 // Target pointer and flag to set when request has finished.
 static uint16_t *output_ptr;
@@ -83,7 +82,7 @@ void i2c_fsm(void)
 			// Not a lot we can do about this, except count the
 			// accumulated errors.
 			I2C_SR1(i2c) &= ~I2C_SR1_AF;
-			i2c_error = true;
+			*output_done_ptr = I2C_STAT_ERR;
 			i2c_state = I2C_IDLE;
 		}
 		break;;
@@ -97,7 +96,7 @@ void i2c_fsm(void)
 		} else if (I2C_SR1(i2c) & I2C_SR1_AF) {
 			// Ack failure again
 			I2C_SR1(i2c) &= ~I2C_SR1_AF;
-			i2c_error = true;
+			*output_done_ptr = I2C_STAT_ERR;
 			i2c_state = I2C_IDLE;
 		}
 		break;
@@ -139,7 +138,7 @@ void i2c_fsm(void)
 		} else if (I2C_SR1(i2c) & I2C_SR1_AF) {
 			// Acknowledge failure: the INA did not respond
 			I2C_SR1(i2c) &= ~I2C_SR1_AF;
-			i2c_error = true;
+			*output_done_ptr = I2C_STAT_ERR;
 			i2c_state = I2C_IDLE;
 		}
 		break;
@@ -206,7 +205,6 @@ void i2c_init_read(uint8_t addr, uint8_t reg, uint16_t *output,
 	ina_addr = addr;
 	ina_reg = reg;
 	ina_result = 0;
-	i2c_error = false;
 	output_ptr = output;
 	output_done_ptr = flag;
 	*output = 0;
