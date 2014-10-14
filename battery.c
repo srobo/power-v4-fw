@@ -51,14 +51,15 @@ static uint32_t i2c = I2C1;
 enum {
 	I2C_IDLE,
 	I2C_WRITE_START, I2C_WRITE_ADDR, I2C_WRITE_DATA, I2C_WRITE_STOP,
-	I2C_READ_START, I2C_READ_ADDR, I2C_READ_DATA, I2C_READ_STOP
+	I2C_READ_START, I2C_READ_ADDR, I2C_READ_DATA1, I2C_READ_DATA2,
+	I2C_READ_STOP
 } i2c_state = I2C_IDLE;
 
 // Data for performing a transaction with the INA219.
-static uint8_t ina_addr;  // Address on the bus. 0x40 for batt, 0x41 for smps
-static uint8_t ina_reg;   // Which INA reg to read. 1 = vshunt, 2 = vbus
-static uint8_t ina_result;// Read value is read here.
-static bool i2c_error;    // Acknowledge failure or bus failure occurred.
+static uint8_t ina_addr;   // Address on the bus. 0x40 for batt, 0x41 for smps
+static uint8_t ina_reg;    // Which INA reg to read. 1 = vshunt, 2 = vbus
+static uint16_t ina_result;// Read value is read here.
+static bool i2c_error;     // Acknowledge failure or bus failure occurred.
 
 // To be called with i2c intrs disabled
 void i2c_fsm(void)
