@@ -51,6 +51,30 @@ void i2c_init()
 			| I2C_CR2_ITERREN;
 }
 
+static void check_ack_fail()
+{
+	if (I2C_SR1(i2c) & I2C_SR1_AF) {
+		// Acknowledge failure: the INA did not respond
+		// Not a lot we can do about this, except count the
+		// accumulated errors.
+		I2C_SR1(i2c) &= ~I2C_SR1_AF;
+		*output_done_ptr = I2C_STAT_ERR_AF;
+		i2c_state = I2C_IDLE;
+	}
+	return;
+}
+
+static void check_berr()
+{
+	if (I2C_SR1(i2c) & I2C_SR1_BERR) {
+		// Bus error -- we did something wrong. Oh dear.
+		I2C_SR1(i2c) &= ~I2C_SR1_BERR;
+		*output_done_ptr = I2C_STAT_ERR_BERR;
+		i2c_state = I2C_IDLE;
+	}
+	return;
+}
+
 // To be called with i2c intrs disabled
 void i2c_fsm(void)
 {
@@ -77,14 +101,9 @@ void i2c_fsm(void)
 			// Send data
 			i2c_send_data(i2c, ina_reg);
 			i2c_state = I2C_WRITE_DATA;
-		} else if (I2C_SR1(i2c) & I2C_SR1_AF) {
-			// Acknowledge failure: the INA did not respond
-			// Not a lot we can do about this, except count the
-			// accumulated errors.
-			I2C_SR1(i2c) &= ~I2C_SR1_AF;
-			*output_done_ptr = I2C_STAT_ERR;
-			i2c_state = I2C_IDLE;
 		}
+		check_ack_fail();
+		check_berr();
 		break;;
 	case I2C_WRITE_DATA:
 		// We're writing data; has it gone out and been ack'd?
@@ -93,12 +112,9 @@ void i2c_fsm(void)
 			// Transmit done. Now stop and await the bus being free
 			 i2c_send_stop(i2c);
 			 i2c_state = I2C_WRITE_STOP;
-		} else if (I2C_SR1(i2c) & I2C_SR1_AF) {
-			// Ack failure again
-			I2C_SR1(i2c) &= ~I2C_SR1_AF;
-			*output_done_ptr = I2C_STAT_ERR;
-			i2c_state = I2C_IDLE;
 		}
+		check_ack_fail();
+		check_berr();
 		break;
 	case I2C_WRITE_STOP:
 		// Await the bus being free.
@@ -135,12 +151,9 @@ void i2c_fsm(void)
 			u32 = I2C_SR2(i2c);
 			// We're now to await first byte being sent by the INA.
 			i2c_state = I2C_READ_DATA1;
-		} else if (I2C_SR1(i2c) & I2C_SR1_AF) {
-			// Acknowledge failure: the INA did not respond
-			I2C_SR1(i2c) &= ~I2C_SR1_AF;
-			*output_done_ptr = I2C_STAT_ERR;
-			i2c_state = I2C_IDLE;
 		}
+		check_ack_fail();
+		check_berr();
 		break;
 	case I2C_READ_DATA1:
 		// We're awaiting a byte turning up.
@@ -154,6 +167,8 @@ void i2c_fsm(void)
 			i2c_send_stop(i2c);
 			i2c_state = I2C_READ_DATA2;
 		}
+		check_ack_fail();
+		check_berr();
 		break;
 	case I2C_READ_DATA2:
 		if (I2C_SR1(i2c) & I2C_SR1_RxNE) {
@@ -164,6 +179,8 @@ void i2c_fsm(void)
 			// until the bus is free though.
 			i2c_state = I2C_READ_STOP;
 		}
+		check_ack_fail();
+		check_berr();
 		break;
 	case I2C_READ_STOP:
 		if (I2C_SR2(i2c) & I2C_SR2_BUSY)
