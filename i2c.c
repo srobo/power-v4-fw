@@ -5,6 +5,8 @@
 #include <libopencm3/stm32/i2c.h>
 #include <libopencm3/cm3/nvic.h>
 
+#include "i2c.h"
+
 // I2C state progression: it may seem that there are distinct write and
 // read cycles in this state machine, but there aren't: we only ever write one
 // byte at an INA219 (the reg on it to read) then read that register from it.
@@ -25,7 +27,7 @@ static bool i2c_error;     // Acknowledge failure or bus failure occurred.
 
 // Target pointer and flag to set when request has finished.
 static uint16_t *output_ptr;
-static bool *output_done_ptr;
+static enum i2c_stat *output_done_ptr;
 
 static uint32_t i2c = I2C1;
 
@@ -169,7 +171,7 @@ void i2c_fsm(void)
 			break;
 		// Set output data fields
 		*output_ptr = ina_result;
-		*output_done_ptr = true;
+		*output_done_ptr = I2C_STAT_DONE;
 		i2c_state = I2C_IDLE;
 		break;
 	}
@@ -198,7 +200,8 @@ bool i2c_is_idle()
 	return i2c_state == I2C_IDLE;
 }
 
-void i2c_init_read(uint8_t addr, uint8_t reg, uint16_t *output, bool *flag)
+void i2c_init_read(uint8_t addr, uint8_t reg, uint16_t *output,
+			enum i2c_stat *flag)
 {
 	ina_addr = addr;
 	ina_reg = reg;
@@ -206,6 +209,8 @@ void i2c_init_read(uint8_t addr, uint8_t reg, uint16_t *output, bool *flag)
 	i2c_error = false;
 	output_ptr = output;
 	output_done_ptr = flag;
+	*output = 0;
+	*flag = I2C_STAT_NOTYET;
 
 	// Initiate start condition
 	nvic_disable_irq(NVIC_I2C1_EV_IRQ);
