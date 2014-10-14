@@ -192,3 +192,24 @@ void i2c_poll()
 	i2c_fsm();
 	nvic_enable_irq(NVIC_I2C1_EV_IRQ);
 }
+
+bool i2c_is_idle()
+{
+	return i2c_state == I2C_IDLE;
+}
+
+void i2c_init_read(uint8_t addr, uint8_t reg, uint16_t *output, bool *flag)
+{
+	ina_addr = addr;
+	ina_reg = reg;
+	ina_result = 0;
+	i2c_error = false;
+	output_ptr = output;
+	output_done_ptr = flag;
+
+	// Initiate start condition
+	nvic_disable_irq(NVIC_I2C1_EV_IRQ);
+	i2c_state = I2C_WRITE_START;
+	nvic_enable_irq(NVIC_I2C1_EV_IRQ);
+	i2c_send_start(i2c);
+}
