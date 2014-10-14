@@ -129,7 +129,33 @@ void i2c_fsm(void)
 		i2c_state = I2C_READ_START;
 		break;
 	case I2C_READ_START:
+		// A start has been initiated; has a start condition occurred?
+		if (I2C_SR1(i2c) & I2C_SR1_SB) {
+			// Write an address.
+			i2c_send_7bit_address(i2c, ina_addr, I2C_WRITE);
+			i2c_state = I2C_READ_ADDR;
+		}
+		break;
 	case I2C_READ_ADDR:
+		// An address has been written; did we get an ack?
+		if (I2C_SR1(i2c) & I2C_SR1_ADDR) {
+			// Clear by reading SR2
+			u32 = I2C_SR2(i2c);
+			// We're now to await one byte being sent by the INA.
+			// According to the STM32Fx manual, in intr mode we
+			// should immediately clear our acknowledge bit and
+			// initiate a stop condition. This will ensure that
+			// after reading a byte, we nack and stop.
+			// ... but we never ack anyway, so no need to clear it
+			i2c_send_stop(i2c);
+			i2c_state = I2C_READ_DATA;
+		} else if (I2C_SR1(i2c) & I2C_SR1_AF) {
+			// Acknowledge failure: the INA did not respond
+			I2C_SR1(i2c) &= ~I2C_SR1_AF;
+			i2c_error = true;
+			i2c_state = I2C_IDLE;
+		}
+		break;
 	case I2C_READ_ACK1:
 	case I2C_READ_DATA:
 	case I2C_READ_ACK2:
