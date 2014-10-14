@@ -117,8 +117,10 @@ main()
 		// Do things
 		usb_poll();
 		current_sense_poll();
+#if 0
 		battery_poll();
 		check_batt_current_limit();
 		check_batt_undervolt();
+#endif
 	}
 }
