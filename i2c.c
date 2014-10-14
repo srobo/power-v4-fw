@@ -175,12 +175,13 @@ void i2c_fsm(void)
 
 void i2c1_ev_isr(void)
 {
+	i2c_fsm();
 	return;
 }
 
 void i2c_poll()
 {
 	nvic_disable_irq(NVIC_I2C1_EV_IRQ);
-	i2c_poll();
+	i2c_fsm();
 	nvic_enable_irq(NVIC_I2C1_EV_IRQ);
 }
