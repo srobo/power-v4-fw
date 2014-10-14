@@ -56,16 +56,50 @@ enum {
 	I2C_READ_ACK2, I2C_READ_STOP
 } i2c_state = I2C_IDLE;
 
+// Data for performing a transaction with the INA219.
+static uint8_t ina_addr;  // Address on the bus. 0x40 for batt, 0x41 for smps
+static uint8_t ina_reg;   // Which INA reg to read. 1 = vshunt, 2 = vbus
+static uint8_t ina_result;// Read value is read here.
+static bool i2c_error;    // Acknowledge failure or bus failure occurred.
+
 // To be called with i2c intrs disabled
 void i2c_fsm(void)
 {
+	volatile uint32_t u32;
+
 	switch (i2c_state) {
 	case I2C_IDLE:
+		// Activity is initiated by some other function call
 		break;
 	case I2C_WRITE_START:
+		// A start has been initiated; has a start condition occurred?
+		if (I2C_SR1(i2c) & I2C_SR1_SB) {
+			// It will be cleared when we load the data register.
+			// In the meantime, write an address.
+			i2c_send_7bit_address(i2c, ina_addr, I2C_WRITE);
+			i2c_state = I2C_WRITE_ADDR;
+		}
+		break;
 	case I2C_WRITE_ADDR:
-	case I2C_WRITE_ACK1:
+		// An address has been written; did we get an ack?
+		if (I2C_SR1(i2c) & I2C_SR1_ADDR) {
+			// Clear by reading SR2
+			u32 = I2C_SR2(i2c);
+			// Send data
+			i2c_send_data(i2c, ina_reg);
+			i2c_state = I2C_WRITE_DATA;
+		} else if (I2C_SR1(i2c) & I2C_SR1_AF) {
+			// Acknowledge failure: the INA did not respond
+			// Not a lot we can do about this, except count the
+			// accumulated errors.
+			I2C_SR1(i2c) &= ~I2C_SR1_AF;
+			i2c_error = true;
+			i2c_state = I2C_IDLE;
+		}
+		break;;
 	case I2C_WRITE_DATA:
+		// We're writing data; has it gone out and been ack'd?
+		//u32 = I2C_SR1(i2c); // 
 	case I2C_WRITE_ACK2:
 	case I2C_WRITE_STOP:
 	case I2C_READ_START:
