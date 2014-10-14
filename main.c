@@ -119,6 +119,7 @@ main()
 		// Do things
 		usb_poll();
 		current_sense_poll();
+		i2c_poll();
 #if 0
 		battery_poll();
 		check_batt_current_limit();
