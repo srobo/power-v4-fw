@@ -99,9 +99,35 @@ void i2c_fsm(void)
 		break;;
 	case I2C_WRITE_DATA:
 		// We're writing data; has it gone out and been ack'd?
-		//u32 = I2C_SR1(i2c); // 
-	case I2C_WRITE_ACK2:
+		// Additionally await BTF, meaning it's been acknowledged(?)
+		if (I2C_SR1(i2c) & (I2C_SR1_TxE | I2C_SR1_BTF)) {
+			// Transmit done. Now stop and await the bus being free
+			 i2c_send_stop(i2c);
+			 i2c_state = I2C_WRITE_STOP;
+		} else if (I2C_SR1(i2c) & I2C_SR1_AF) {
+			// Ack failure again
+			I2C_SR1(i2c) &= ~I2C_SR1_AF;
+			i2c_error = true;
+			i2c_state = I2C_IDLE;
+		}
+		break;
 	case I2C_WRITE_STOP:
+		// Await the bus being free.
+		if (I2C_SR2(i2c) & I2C_SR2_BUSY)
+			break;
+
+		// No longer busy. However we need to wait 160ns before
+		// starting again or the INA croaks. @72Mhz, that's 12 cycles.
+		// Yes, in intr context
+		__asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop");
+		__asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop");
+		__asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop");
+
+		// Start condition for reading data.
+		i2c_send_start(i2c);
+		// We're now reading
+		i2c_state = I2C_READ_START;
+		break;
 	case I2C_READ_START:
 	case I2C_READ_ADDR:
 	case I2C_READ_ACK1:
