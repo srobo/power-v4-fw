@@ -118,7 +118,7 @@ void i2c_fsm(void)
 
 		// No longer busy. However we need to wait 160ns before
 		// starting again or the INA croaks. @72Mhz, that's 12 cycles.
-		// Yes, in intr context
+		// Yes, this is probably pointless, but essentially costless
 		__asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop");
 		__asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop");
 		__asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop");
