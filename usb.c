@@ -6,6 +6,7 @@
 #include "output.h"
 #include "led.h"
 #include "battery.h"
+#include "i2c.h"
 
 static usbd_device *usbd_dev;
 
@@ -112,15 +113,30 @@ handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 		break;
 
 	case POWERBOARD_READ_BATT:
+	{
 		if (*len < 8)
 			break;
 
 		*len = 8;
 
 		u32ptr = (uint32_t*) *buf;
+		// XXX hacks for testing this i2c goo.
+
+
+		volatile uint16_t result;
+		volatile enum i2c_stat flag;
+		i2c_init_read(0x40, 1, &result, &flag);
+		while (flag == I2C_STAT_NOTYET)
+			;
+
+		*u32ptr++ = flag;
+		*u32ptr++ = result;
+#if 0
 		*u32ptr++ = read_battery_current();
 		*u32ptr++ = read_battery_voltage();
+#endif
 		result = USBD_REQ_HANDLED;
+	}
 		break;
 
 	case POWERBOARD_READ_BUTTON:
