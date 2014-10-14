@@ -23,6 +23,10 @@ static uint8_t ina_reg;    // Which INA reg to read. 1 = vshunt, 2 = vbus
 static uint16_t ina_result;// Read value is read here.
 static bool i2c_error;     // Acknowledge failure or bus failure occurred.
 
+// Target pointer and flag to set when request has finished.
+static uint16_t *output_ptr;
+static bool *output_done_ptr;
+
 static uint32_t i2c = I2C1;
 
 void i2c_init()
@@ -163,6 +167,9 @@ void i2c_fsm(void)
 	case I2C_READ_STOP:
 		if (I2C_SR2(i2c) & I2C_SR2_BUSY)
 			break;
+		// Set output data fields
+		*output_ptr = ina_result;
+		*output_done_ptr = true;
 		i2c_state = I2C_IDLE;
 		break;
 	}
