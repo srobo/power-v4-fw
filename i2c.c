@@ -38,6 +38,9 @@ void i2c_init()
         i2c_set_ccr(I2C1, 30);
         i2c_set_trise(I2C1, 0x0b);
         i2c_peripheral_enable(I2C1);
+
+	nvic_enable_irq(NVIC_I2C1_EV_IRQ);
+	nvic_set_priority(NVIC_I2C1_EV_IRQ, 1);
 }
 
 // To be called with i2c intrs disabled
@@ -165,4 +168,16 @@ void i2c_fsm(void)
 	(void)u32;
 
 	return;
+}
+
+void i2c1_ev_isr(void)
+{
+	return;
+}
+
+void i2c_poll()
+{
+	nvic_disable_irq(NVIC_I2C1_EV_IRQ);
+	i2c_poll();
+	nvic_enable_irq(NVIC_I2C1_EV_IRQ);
 }
