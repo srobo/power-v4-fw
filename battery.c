@@ -171,6 +171,9 @@ void i2c_fsm(void)
 		break;
 	}
 
+	// Silence the compiler
+	(void)u32;
+
 	return;
 }
 
