@@ -51,6 +51,30 @@ enum {
 	I2C_READ_START, I2C_READ_ADDR, I2C_READ_ACK1, I2C_READ_DATA, I2C_READ_ACK2, I2C_READ_STOP
 } i2c_state = I2C_IDLE;
 
+// To be called with i2c intrs disabled
+void i2c_fsm(void)
+{
+	switch (i2c_state) {
+	case I2C_IDLE:
+		break;
+	case I2C_WRITE_START:
+	case I2C_WRITE_ADDR:
+	case I2C_WRITE_ACK1:
+	case I2C_WRITE_DATA:
+	case I2C_WRITE_ACK2:
+	case I2C_WRITE_STOP:
+	case I2C_READ_START:
+	case I2C_READ_ADDR:
+	case I2C_READ_ACK1:
+	case I2C_READ_DATA:
+	case I2C_READ_ACK2:
+	case I2C_READ_STOP:
+		break;
+	}
+
+	return;
+}
+
 static void set_reg_pointer( uint8_t a, uint8_t r )
 {
 	// EV5
