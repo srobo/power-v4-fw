@@ -22,7 +22,7 @@ void battery_init(void) {
 	timer_set_prescaler(TIM2, 1799); // 72Mhz -> 40Khz
 	timer_set_period(TIM2, 10); // 10 ticks -> 4Khz
 	nvic_enable_irq(NVIC_TIM2_IRQ);
-	nvic_set_priority(NVIC_TIM2_IRQ, 1);
+	nvic_set_priority(NVIC_TIM2_IRQ, 2); // Less important
 	timer_enable_update_event(TIM2);
 	timer_enable_irq(TIM2, TIM_DIER_UIE);
 	timer_enable_counter(TIM2);
