@@ -156,10 +156,20 @@ void i2c_fsm(void)
 			i2c_state = I2C_IDLE;
 		}
 		break;
-	case I2C_READ_ACK1:
 	case I2C_READ_DATA:
-	case I2C_READ_ACK2:
+		// We're awaiting a byte turning up.
+		if (I2C_SR1(i2c) & I2C_SR1_RxNE) {
+			// Excellent, we have a byte.
+			ina_result = i2c_get_data(i2c);
+			// We have nothing more to do as hardware will generate
+			// a stop condition. Spin until the bus is free though.
+			i2c_state = I2C_READ_STOP;
+		}
+		break;
 	case I2C_READ_STOP:
+		if (I2C_SR2(i2c) & I2C_SR2_BUSY)
+			break;
+		i2c_state = I2C_IDLE;
 		break;
 	}
 
