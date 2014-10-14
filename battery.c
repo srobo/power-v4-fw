@@ -44,8 +44,11 @@ static uint32_t reg32 __attribute__((unused));
 static uint32_t i2c = I2C1;
 
 enum {
-	I2C_IDLE, I2C_READ_START, I2C_READ_ADDR, I2C_READ_ACK1, I2C_READ_DATA,
-	I2C_READ_ACK2, I2C_READ_STOP
+	I2C_IDLE,
+
+	I2C_WRITE_START, I2C_WRITE_ADDR, I2C_WRITE_ACK1, I2C_WRITE_DATA, I2C_WRITE_ACK2, I2C_WRITE_STOP,
+
+	I2C_READ_START, I2C_READ_ADDR, I2C_READ_ACK1, I2C_READ_DATA, I2C_READ_ACK2, I2C_READ_STOP
 } i2c_state = I2C_IDLE;
 
 // To be called with i2c intrs disabled
@@ -54,6 +57,12 @@ void i2c_fsm(void)
 	switch (i2c_state) {
 	case I2C_IDLE:
 		break;
+	case I2C_WRITE_START:
+	case I2C_WRITE_ADDR:
+	case I2C_WRITE_ACK1:
+	case I2C_WRITE_DATA:
+	case I2C_WRITE_ACK2:
+	case I2C_WRITE_STOP:
 	case I2C_READ_START:
 	case I2C_READ_ADDR:
 	case I2C_READ_ACK1:
