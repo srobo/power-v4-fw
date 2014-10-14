@@ -67,12 +67,12 @@ static void set_reg_pointer( uint8_t a, uint8_t r )
 	// /EV8_2
 }
 
-static uint16_t f_reg(uint8_t r)
+static uint16_t read_reg(uint8_t addr, uint8_t reg)
 {
 
 	i2c_send_start(i2c);
 
-	set_reg_pointer(0x41, r);
+	set_reg_pointer(addr, reg);
 
 	i2c_send_start(i2c);
 
@@ -83,7 +83,7 @@ static uint16_t f_reg(uint8_t r)
 	// Set POS and ACK
 	I2C_CR1(i2c) |= (I2C_CR1_POS | I2C_CR1_ACK);
 
-	i2c_send_7bit_address(i2c, 0x41, I2C_READ);
+	i2c_send_7bit_address(i2c, addr, I2C_READ);
 	// /EV5
 
 	// EV6
@@ -106,8 +106,12 @@ static uint16_t f_reg(uint8_t r)
 	// Clear POS
 	I2C_CR1(i2c) &= ~I2C_CR1_POS;
 
-
 	return val;
+}
+
+static uint16_t f_reg(uint8_t r)
+{
+	return read_reg(0x41, r);
 }
 
 uint16_t f_vshunt() { return f_reg(0x02); }
@@ -115,44 +119,7 @@ uint16_t f_vbus() { return f_reg(0x01); }
 
 static uint16_t battery_reg(uint8_t r)
 {
-	i2c_send_start(i2c);
-
-	set_reg_pointer(0x40, r);
-
-	i2c_send_start(i2c);
-
-	// EV5
-	while (!((I2C_SR1(i2c) & I2C_SR1_SB)
-	        & (I2C_SR2(i2c) & (I2C_SR2_MSL | I2C_SR2_BUSY))));
-
-	// Set POS and ACK
-	I2C_CR1(i2c) |= (I2C_CR1_POS | I2C_CR1_ACK);
-
-	i2c_send_7bit_address(i2c, 0x40, I2C_READ);
-	// /EV5
-
-	// EV6
-	while (!(I2C_SR1(i2c) & I2C_SR1_ADDR));
-	reg32 = I2C_SR2(i2c);
-	// /EV6
-
-	// Clear ACK
-	I2C_CR1(i2c) &= ~I2C_CR1_ACK;
-
-	// EV7_3
-	while (!(I2C_SR1(i2c) & I2C_SR1_BTF));
-	i2c_send_stop(i2c);
-	// /EV7_3
-	
-	uint16_t val;
-	val = i2c_get_data(i2c) << 8;
-	val |= i2c_get_data(i2c);
-
-	// Clear POS
-	I2C_CR1(i2c) &= ~I2C_CR1_POS;
-
-
-	return val;
+	return read_reg(0x40, r);
 }
 
 uint16_t battery_vshunt() { return battery_reg(0x01); }
