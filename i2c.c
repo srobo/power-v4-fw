@@ -25,8 +25,8 @@ static uint8_t ina_reg;    // Which INA reg to read. 1 = vshunt, 2 = vbus
 static uint16_t ina_result;// Read value is read here.
 
 // Target pointer and flag to set when request has finished.
-static uint16_t *output_ptr;
-static enum i2c_stat *output_done_ptr;
+static volatile uint16_t *output_ptr;
+static volatile enum i2c_stat *output_done_ptr;
 
 static uint32_t i2c = I2C1;
 
@@ -199,8 +199,8 @@ bool i2c_is_idle()
 	return i2c_state == I2C_IDLE;
 }
 
-void i2c_init_read(uint8_t addr, uint8_t reg, uint16_t *output,
-			enum i2c_stat *flag)
+void i2c_init_read(uint8_t addr, uint8_t reg, volatile uint16_t *output,
+			volatile enum i2c_stat *flag)
 {
 	ina_addr = addr;
 	ina_reg = reg;
