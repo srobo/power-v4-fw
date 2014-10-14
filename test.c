@@ -17,6 +17,7 @@
 #include "usart.h"
 #include "pswitch.h"
 #include "analogue.h"
+#include "i2c.h"
 
 #define DELAY 4000
 
@@ -33,6 +34,7 @@ void init(void) {
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPBEN);
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPCEN);
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPDEN);
+	i2c_init();
 	led_init();
 	output_init();
 	fan_init();

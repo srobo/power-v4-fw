@@ -18,6 +18,7 @@
 #include "pswitch.h"
 #include "analogue.h"
 #include "usb.h"
+#include "i2c.h"
 
 #define delay(x) do { for (int i = 0; i < x * 1000; i++) \
                           __asm__("nop"); \
@@ -35,6 +36,7 @@ init()
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPDEN);
 
 	usb_init();
+	i2c_init();
 	led_init();
 	output_init();
 	fan_init();
