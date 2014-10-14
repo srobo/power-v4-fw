@@ -41,6 +41,9 @@ void i2c_init()
 
 	nvic_enable_irq(NVIC_I2C1_EV_IRQ);
 	nvic_set_priority(NVIC_I2C1_EV_IRQ, 1);
+	// Enable buffer-free/full, event, and error intrs.
+	I2C_CR2(i2c) = I2C_CR2(i2c) | I2C_CR2_ITBUFEN | I2C_CR2_ITEVTEN
+			| I2C_CR2_ITERREN;
 }
 
 // To be called with i2c intrs disabled
