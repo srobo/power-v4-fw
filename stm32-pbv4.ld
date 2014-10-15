@@ -42,7 +42,11 @@ SECTIONS
 {
         .text : {
                 *(.vectors)     /* Vector table */
-		dfu-bootloader/usbdfu.o(.text)
+		dfu-bootloader/usbdfu.o(.text*)
+		usb*(.text*)
+	} >rom
+	. = 0x08002000;
+	.text : {
                 *(.text*)       /* Program code */
                 . = ALIGN(4);
                 *(.fwver)
