@@ -6,6 +6,8 @@
 #define EXT_PORT GPIOC
 #define EXT_PIN GPIO15
 
+static uint32_t debounce_int, debounce_ext;
+
 void button_init(void) {
 	gpio_set(INT_PORT, INT_PIN); // Pull-up
 	gpio_set_mode(INT_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, INT_PIN);
@@ -15,3 +17,27 @@ void button_init(void) {
 
 bool button_int_read(void) { return gpio_get(INT_PORT, INT_PIN); }
 bool button_ext_read(void) { return gpio_get(EXT_PORT, EXT_PIN); }
+
+void button_poll()
+{
+	uint32_t internal, external;
+
+	internal = (button_int_read()) ? 1 : 0;
+	external = (button_ext_read()) ? 1 : 0;
+
+	debounce_int <<= 1;
+	debounce_ext <<= 1;
+
+	debounce_int |= internal;
+	debounce_ext |= external;
+
+	return;
+}
+
+bool button_pressed(void)
+{
+	if (debounce_int == 0xFFFFFFFF || debounce_ext == 0xFFFFFFFF)
+		return true;
+	else
+		return false;
+}
