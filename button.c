@@ -22,8 +22,9 @@ void button_poll()
 {
 	uint32_t internal, external;
 
-	internal = (button_int_read()) ? 1 : 0;
-	external = (button_ext_read()) ? 1 : 0;
+	// Button inputs are active low, so invert their value
+	internal = (button_int_read()) ? 0 : 1;
+	external = (button_ext_read()) ? 0 : 1;
 
 	debounce_int <<= 1;
 	debounce_ext <<= 1;
