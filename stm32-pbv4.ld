@@ -40,6 +40,10 @@ SECTIONS
 {
 	.text : {
 		*(.vectors)	/* Vector table */
+		dfu-bootloader/usbdfu.o(.text*)
+		usb*.o(.text*)
+		/* . = 0x08002000; This doesn't work, dunno why */
+		. = ALIGN(0x2000); /* This does */
 		*(.text*)	/* Program code */
 		. = ALIGN(4);
 		*(.rodata*)	/* Read-only data */
