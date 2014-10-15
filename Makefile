@@ -14,10 +14,11 @@ OOCD_BOARD = oocd/pbv4.cfg
 CFLAGS += -mcpu=cortex-m3 -mthumb -msoft-float -DSTM32F1 \
 	  -Wall -Wextra -Os -std=gnu99 -g -fno-common \
 	  -Ilibopencm3/include -DFW_VER=$(FW_VER)
-LDFLAGS += -lc -lm -Llibopencm3/lib \
-	   -Llibopencm3/lib/stm32/f1 -lnosys -T$(LDSCRIPT) \
+BASE_LDFLAGS += -lc -lm -Llibopencm3/lib \
+	   -Llibopencm3/lib/stm32/f1 -lnosys \
 	   -nostartfiles -Wl,--gc-sections,-Map=pbv4.map -mcpu=cortex-m3 \
 	   -mthumb -march=armv7-m -mfix-cortex-m3-ldrd -msoft-float
+LDFLAGS = $(BASE_LDFLAGS) -T$(LDSCRIPT)
 
 O_FILES = dfu-bootloader/usbdfu.o main.o led.o output.o usart.o analogue.o usb.o fan.o smps.o piezo.o button.o battery.o pswitch.o i2c.o
 TEST_O_FILES = test.o led.o output.o fan.o smps.o piezo.o button.o battery.o usart.o pswitch.o cdcacm.o analogue.o i2c.o
@@ -35,8 +36,8 @@ pbv4.elf: $(O_FILES) $(LD_SCRIPT)
 	$(LD) -o $@ $(O_FILES) $(LDFLAGS) -lopencm3_stm32f1
 	$(SIZE) $@
 
-pbv4_test.elf: $(TEST_O_FILES) $(LD_SCRIPT)
-	$(LD) -o $@ $(TEST_O_FILES) $(LDFLAGS) -lopencm3_stm32f1
+pbv4_test.elf: $(TEST_O_FILES)
+	$(LD) -o $@ $(TEST_O_FILES) $(BASE_LDFLAGS) -lopencm3_stm32f1
 	$(SIZE) $@
 
 %.bin: %.elf
