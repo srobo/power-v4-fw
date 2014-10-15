@@ -71,6 +71,23 @@ void tim2_isr(void)
 	return;
 }
 
+static bool timer_triggered()
+{
+	bool tmp;
+	nvic_disable_irq(NVIC_TIM2_IRQ);
+	tmp = batt_do_read;
+	nvic_enable_irq(NVIC_TIM2_IRQ);
+	return tmp;
+}
+
+static void reset_battery_timer()
+{
+	nvic_disable_irq(NVIC_TIM2_IRQ);
+	timer_set_counter(TIM2, 0);
+	batt_do_read = false;
+	nvic_enable_irq(NVIC_TIM2_IRQ);
+}
+
 void battery_poll()
 {
 	bool do_read = false;
