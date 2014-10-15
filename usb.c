@@ -6,6 +6,7 @@
 #include "output.h"
 #include "led.h"
 #include "battery.h"
+#include "button.h"
 
 static usbd_device *usbd_dev;
 
@@ -127,6 +128,14 @@ handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 		break;
 
 	case POWERBOARD_READ_BUTTON:
+		if (*len < 4)
+			break;
+
+		*len = 4;
+		u32ptr = (uint32_t*)buf;
+		*u32ptr = button_pressed();
+		result = USBD_REQ_HANDLED;
+		break;
 	case POWERBOARD_READ_FWVER:
 	default:
 		break;
