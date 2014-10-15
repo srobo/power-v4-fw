@@ -44,8 +44,6 @@ void i2c_init()
         i2c_set_trise(I2C1, 0x0b);
         i2c_peripheral_enable(I2C1);
 
-	nvic_enable_irq(NVIC_I2C1_EV_IRQ);
-	nvic_set_priority(NVIC_I2C1_EV_IRQ, 1);
 	// Enable buffer-free/full, event, and error intrs.
 	I2C_CR2(i2c) = I2C_CR2(i2c) | I2C_CR2_ITBUFEN | I2C_CR2_ITEVTEN
 			| I2C_CR2_ITERREN;
@@ -93,8 +91,6 @@ void i2c_fsm(void)
 		if (I2C_SR2(i2c) & I2C_SR2_BUSY)
 			break;
 
-		// No longer busy. However we need to wait 160ns before
-		// starting again or the INA croaks. @72Mhz, that's 12 cycles.
 		// Yes, this is probably pointless, but essentially costless
 		__asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop");
 		__asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop");
@@ -164,17 +160,9 @@ void i2c_fsm(void)
 	return;
 }
 
-void i2c1_ev_isr(void)
-{
-	i2c_fsm();
-	return;
-}
-
 void i2c_poll()
 {
-	nvic_disable_irq(NVIC_I2C1_EV_IRQ);
 	i2c_fsm();
-	nvic_enable_irq(NVIC_I2C1_EV_IRQ);
 }
 
 bool i2c_is_idle()
@@ -194,8 +182,6 @@ void i2c_init_read(uint8_t addr, uint8_t reg, volatile uint16_t *output,
 	*flag = I2C_STAT_NOTYET;
 
 	// Initiate start condition
-	nvic_disable_irq(NVIC_I2C1_EV_IRQ);
 	i2c_state = I2C_WRITE_START;
-	nvic_enable_irq(NVIC_I2C1_EV_IRQ);
 	i2c_send_start(i2c);
 }
