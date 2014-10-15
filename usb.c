@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <libopencm3/usb/usbd.h>
 #include <libopencm3/stm32/gpio.h>
+#include <libopencm3/usb/dfu.h>
 
 #include "usb.h"
 #include "output.h"
@@ -41,16 +42,42 @@ const struct usb_interface_descriptor dummyiface = {
         .iInterface = 0,
 };
 
+const struct usb_dfu_descriptor dfu_function = {
+        .bLength = sizeof(struct usb_dfu_descriptor),
+        .bDescriptorType = DFU_FUNCTIONAL,
+        .bmAttributes = USB_DFU_CAN_DOWNLOAD | USB_DFU_WILL_DETACH,
+        .wDetachTimeout = 255,
+        .wTransferSize = 128,
+        .bcdDFUVersion = 0x011A,
+};
+
+const struct usb_interface_descriptor dfu_iface = {
+        .bLength = USB_DT_INTERFACE_SIZE,
+        .bDescriptorType = USB_DT_INTERFACE,
+        .bInterfaceNumber = 1,
+        .bAlternateSetting = 0,
+        .bNumEndpoints = 0,
+        .bInterfaceClass = 0xFE, // Application specific class code
+        .bInterfaceSubClass = 0x01, // DFU
+        .bInterfaceProtocol = 0x01, // Protocol 1.0
+        .iInterface = 0,
+	.extra = &dfu_function,
+	.extralen = sizeof(dfu_function),
+};
+
 const struct usb_interface usb_ifaces[] = {{
         .num_altsetting = 1,
         .altsetting = &dummyiface,
+}, {
+        .num_altsetting = 1,
+        .altsetting = &dfu_iface,
 }};
 
 static const struct usb_config_descriptor usb_config = {
         .bLength = USB_DT_CONFIGURATION_SIZE,
         .bDescriptorType = USB_DT_CONFIGURATION,
         .wTotalLength = 0,
-        .bNumInterfaces = 1,   // One dummy, to appease linux
+        .bNumInterfaces = 2,
         .bConfigurationValue = 1,
         .iConfiguration = 0,
         .bmAttributes = 0xC0,  // Bit 6 -> self powered
