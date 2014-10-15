@@ -91,7 +91,10 @@ int main(void) {
 		}
 
 		// I2C U1
+#if 0
+		// XXX jmorse
 		battery_vbus();
+#endif
 
 		// Run LED (also indicates if I2C works)
 		led_set(LED_RUN);

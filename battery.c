@@ -9,6 +9,7 @@
 #include <libopencm3/cm3/nvic.h>
 
 #include "led.h"
+#include "i2c.h"
 
 #define INA219_ADDR_BATT 0x40
 #define INA219_ADDR_SMPS 0x41
@@ -33,9 +34,9 @@ void battery_init(void) {
 	timer_enable_counter(TIM2);
 }
 
-uint16_t battery_vbus()
+uint16_t battery_voltage(uint16_t sample)
 {
-	uint16_t vbus = 0; // XXX jmorse
+	uint16_t vbus = sample;
 	// Lower 3 bits are status bits. Rest is the voltage, measured in units
 	// of 4mV. So, mask the lower 3 bits, then shift down by one.
 	vbus &= 0xFFF8;
@@ -43,9 +44,9 @@ uint16_t battery_vbus()
 	return vbus;
 }
 
-static uint32_t battery_current()
+static uint32_t battery_current(uint16_t sample)
 {
-	uint16_t vshunt = 0; // XXX jmorse
+	uint16_t vshunt = sample;
 
 	// The measurement just taken is measured in 10uV units over the 500uO
 	// resistor pair on the battery rail. I = V/R, and R being small,
@@ -67,7 +68,14 @@ static uint32_t battery_current()
 volatile bool batt_do_read = false;
 uint32_t batt_read_current = 0;
 uint32_t batt_read_voltage = 0;
-enum { BATT_READ_CURR, BATT_READ_VOLT } batt_read_state = BATT_READ_CURR;
+
+// 2 states per source: pre (waiting for timer signal), wait (blocked on i2c)
+enum { BATT_PRE_CURR, BATT_WAIT_CURR,
+	BATT_PRE_VOLT, BATT_WAIT_VOLT }
+batt_read_state = BATT_PRE_CURR;
+
+volatile uint16_t read_sample;
+volatile enum i2c_stat read_flag;
 
 void tim2_isr(void)
 {
@@ -95,32 +103,45 @@ static void reset_battery_timer()
 
 void battery_poll()
 {
-	bool do_read = false;
 
-	nvic_disable_irq(NVIC_TIM2_IRQ);
-	if (batt_do_read) {
-		// First, reset the counter, so there's another 250uS til the
-		// next read
-		timer_set_counter(TIM2, 0);
-		// Then reset the read-flag
-		batt_do_read = false;
-
-		do_read = true;
-	}
-	nvic_enable_irq(NVIC_TIM2_IRQ);
-
-	if (!do_read)
-		return;
-
-	// We're clear to read.
 	switch (batt_read_state) {
-	case BATT_READ_CURR:
-		batt_read_state = BATT_READ_VOLT;
-		batt_read_current = battery_current();
+	case BATT_PRE_CURR:
+		if (!timer_triggered())
+			break;
+
+		reset_battery_timer();
+		// Initiate i2c mangling
+		i2c_init_read(INA219_ADDR_BATT, INA219_REG_VSHUNT,
+				&read_sample, &read_flag);
+		// Spin in this state until we're handed an error or sample
+		batt_read_state = BATT_WAIT_CURR;
+	case BATT_WAIT_CURR:
+		if (read_flag == I2C_STAT_NOTYET)
+			break;
+
+		// XXX do something about errors
+		// Convert the read sample into a current
+		batt_read_current = battery_current(read_sample);
+		batt_read_state = BATT_PRE_VOLT;
 		break;
-	case BATT_READ_VOLT:
-		batt_read_state = BATT_READ_CURR;
-		batt_read_voltage = battery_vbus();
+	case BATT_PRE_VOLT:
+		if (!timer_triggered())
+			break;
+
+		reset_battery_timer();
+		// Initiate i2c mangling
+		i2c_init_read(INA219_ADDR_BATT, INA219_REG_VBUS,
+				&read_sample, &read_flag);
+		// Spin in this state until we're handed an error or sample
+		batt_read_state = BATT_WAIT_VOLT;
+	case BATT_WAIT_VOLT:
+		if (read_flag == I2C_STAT_NOTYET)
+			break;
+
+		// XXX do something about errors
+		// Convert the read sample into a voltage
+		batt_read_voltage = battery_voltage(read_sample);
+		batt_read_state = BATT_PRE_CURR;
 		break;
 	}
 

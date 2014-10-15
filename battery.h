@@ -12,6 +12,3 @@ uint32_t read_battery_current(void);
 
 uint16_t f_vshunt(void);
 uint16_t f_vbus(void);
-
-uint16_t battery_vbus(void);
-uint16_t battery_vshunt(void);
