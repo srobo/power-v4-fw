@@ -37,7 +37,7 @@ pbv4.elf: $(O_FILES) $(LD_SCRIPT)
 	$(SIZE) $@
 
 pbv4_test.elf: $(TEST_O_FILES)
-	$(LD) -o $@ $(TEST_O_FILES) $(BASE_LDFLAGS) -lopencm3_stm32f1
+	$(LD) -o $@ $(TEST_O_FILES) $(BASE_LDFLAGS) -lopencm3_stm32f1 -Tstm32-pbv4_test.ld
 	$(SIZE) $@
 
 %.bin: %.elf
