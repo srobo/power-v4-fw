@@ -28,20 +28,6 @@ static const struct usb_device_descriptor usb_descr = {
         .bNumConfigurations = 1,
 };
 
-// Linux whines if there are no interfaces, so have a dummy, with no endpoints.
-// We'll use the default control endpoint for everything.
-const struct usb_interface_descriptor dummyiface = {
-        .bLength = USB_DT_INTERFACE_SIZE,
-        .bDescriptorType = USB_DT_INTERFACE,
-        .bInterfaceNumber = 0,
-        .bAlternateSetting = 0,
-        .bNumEndpoints = 0,
-        .bInterfaceClass = 0,
-        .bInterfaceSubClass = 0,
-        .bInterfaceProtocol = 0,
-        .iInterface = 4,
-};
-
 const struct usb_dfu_descriptor dfu_function = {
         .bLength = sizeof(struct usb_dfu_descriptor),
         .bDescriptorType = DFU_FUNCTIONAL,
@@ -54,21 +40,18 @@ const struct usb_dfu_descriptor dfu_function = {
 const struct usb_interface_descriptor dfu_iface = {
         .bLength = USB_DT_INTERFACE_SIZE,
         .bDescriptorType = USB_DT_INTERFACE,
-        .bInterfaceNumber = 1,
+        .bInterfaceNumber = 0,
         .bAlternateSetting = 0,
         .bNumEndpoints = 0,
         .bInterfaceClass = 0xFE, // Application specific class code
         .bInterfaceSubClass = 0x01, // DFU
         .bInterfaceProtocol = 0x01, // Protocol 1.0
-        .iInterface = 5,
+        .iInterface = 4,
 	.extra = &dfu_function,
 	.extralen = sizeof(dfu_function),
 };
 
 const struct usb_interface usb_ifaces[] = {{
-        .num_altsetting = 1,
-        .altsetting = &dummyiface,
-}, {
         .num_altsetting = 1,
         .altsetting = &dfu_iface,
 }};
@@ -77,7 +60,7 @@ static const struct usb_config_descriptor usb_config = {
         .bLength = USB_DT_CONFIGURATION_SIZE,
         .bDescriptorType = USB_DT_CONFIGURATION,
         .wTotalLength = 0,
-        .bNumInterfaces = 2,
+        .bNumInterfaces = 1,
         .bConfigurationValue = 1,
         .iConfiguration = 0,
         .bmAttributes = 0xC0,  // Bit 6 -> self powered
