@@ -40,6 +40,7 @@ SECTIONS
 {
         .text : {
                 *(.vectors)     /* Vector table */
+		dfu-bootloader/usbdfu.o(.text)
                 *(.text*)       /* Program code */
                 . = ALIGN(4);
                 *(.fwver)
