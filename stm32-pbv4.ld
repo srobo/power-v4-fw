@@ -44,6 +44,9 @@ SECTIONS
 		usb*.o(.text*)
 		/* . = 0x08002000; This doesn't work, dunno why */
 		. = ALIGN(0x2000); /* This does */
+	} >rom
+	.text : {
+		main.o(.lolstartup)
 		*(.text*)	/* Program code */
 		. = ALIGN(4);
 		*(.rodata*)	/* Read-only data */

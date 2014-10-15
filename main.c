@@ -124,6 +124,7 @@ check_batt_current_limit()
 	}
 }
 
+int powerboard_main() __attribute__((section(".lolstartup")));
 int
 powerboard_main()
 {
