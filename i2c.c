@@ -137,7 +137,7 @@ void i2c_fsm(void)
 		// A start has been initiated; has a start condition occurred?
 		if (I2C_SR1(i2c) & I2C_SR1_SB) {
 			// Write an address.
-			i2c_send_7bit_address(i2c, ina_addr, I2C_WRITE);
+			i2c_send_7bit_address(i2c, ina_addr, I2C_READ);
 			// Set acknowledge bit, to acknowledge the first
 			// byte that turns up on the wire.
 			i2c_enable_ack(i2c);
