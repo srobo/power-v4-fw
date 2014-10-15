@@ -120,8 +120,8 @@ main()
 		usb_poll();
 		current_sense_poll();
 		i2c_poll();
-#if 0
 		battery_poll();
+#if 0
 		check_batt_current_limit();
 		check_batt_undervolt();
 #endif

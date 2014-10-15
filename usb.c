@@ -106,8 +106,11 @@ handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 
 		// Clocking i2c can take a lot of time!
 		u16ptr = (uint16_t*) *buf;
+#if 0
+		// XXX jmorse
 		*u16ptr++ = f_vshunt();
 		*u16ptr++ = f_vbus();
+#endif
 		result = USBD_REQ_HANDLED;
 		break;
 

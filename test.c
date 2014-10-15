@@ -100,7 +100,10 @@ int main(void) {
 		delay(DELAY);
 
 		// I2C U4
+#if 0
+		// XXX jmorse
 		f_vbus();
+#endif
 
 		// Error LED
 		led_set(LED_ERROR);

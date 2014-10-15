@@ -28,93 +28,9 @@ void battery_init(void) {
 	timer_enable_counter(TIM2);
 }
 
-static uint32_t reg32 __attribute__((unused));
-static uint32_t i2c = I2C1;
-
-static void set_reg_pointer( uint8_t a, uint8_t r )
-{
-	// EV5
-	while (!((I2C_SR1(i2c) & I2C_SR1_SB)
-	        & (I2C_SR2(i2c) & (I2C_SR2_MSL | I2C_SR2_BUSY))));
-
-	i2c_send_7bit_address(i2c, a, I2C_WRITE);
-	// /EV5
-
-
-	// EV6
-	while (!(I2C_SR1(i2c) & I2C_SR1_ADDR));
-	reg32 = I2C_SR2(i2c);
-	// /EV6
-
-	// EV8_1
-	i2c_send_data(i2c, r);
-	// /EV8_1
-	
-	// EV8_2
-	while (!(I2C_SR1(i2c) & ( I2C_SR1_BTF | I2C_SR1_TxE )));
-	// /EV8_2
-}
-
-static uint16_t read_reg(uint8_t addr, uint8_t reg)
-{
-
-	i2c_send_start(i2c);
-
-	set_reg_pointer(addr, reg);
-
-	i2c_send_start(i2c);
-
-	// EV5
-	while (!((I2C_SR1(i2c) & I2C_SR1_SB)
-	        & (I2C_SR2(i2c) & (I2C_SR2_MSL | I2C_SR2_BUSY))));
-
-	// Set POS and ACK
-	I2C_CR1(i2c) |= (I2C_CR1_POS | I2C_CR1_ACK);
-
-	i2c_send_7bit_address(i2c, addr, I2C_READ);
-	// /EV5
-
-	// EV6
-	while (!(I2C_SR1(i2c) & I2C_SR1_ADDR));
-	reg32 = I2C_SR2(i2c);
-	// /EV6
-
-	// Clear ACK
-	I2C_CR1(i2c) &= ~I2C_CR1_ACK;
-
-	// EV7_3
-	while (!(I2C_SR1(i2c) & I2C_SR1_BTF));
-	i2c_send_stop(i2c);
-	// /EV7_3
-	
-	uint16_t val;
-	val = i2c_get_data(i2c) << 8;
-	val |= i2c_get_data(i2c);
-
-	// Clear POS
-	I2C_CR1(i2c) &= ~I2C_CR1_POS;
-
-	return val;
-}
-
-static uint16_t f_reg(uint8_t r)
-{
-	return read_reg(0x41, r);
-}
-
-uint16_t f_vshunt() { return f_reg(0x02); }
-uint16_t f_vbus() { return f_reg(0x01); }
-
-static uint16_t battery_reg(uint8_t r)
-{
-	return read_reg(0x40, r);
-}
-
-uint16_t battery_vshunt() { return battery_reg(0x01); }
-
 uint16_t battery_vbus()
 {
-	uint16_t vbus = battery_reg(0x02);
+	uint16_t vbus = 0; // XXX jmorse
 	// Lower 3 bits are status bits. Rest is the voltage, measured in units
 	// of 4mV. So, mask the lower 3 bits, then shift down by one.
 	vbus &= 0xFFF8;
@@ -124,7 +40,7 @@ uint16_t battery_vbus()
 
 static uint32_t battery_current()
 {
-	uint16_t vshunt = battery_vshunt();
+	uint16_t vshunt = 0; // XXX jmorse
 
 	// The measurement just taken is measured in 10uV units over the 500uO
 	// resistor pair on the battery rail. I = V/R, and R being small,
