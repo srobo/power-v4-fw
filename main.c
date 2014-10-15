@@ -76,7 +76,22 @@ shut_down_everything()
 void
 check_batt_undervolt()
 {
-	// EUNIMPLEMENTED
+	uint32_t voltage = read_battery_voltage();
+
+	// Check if voltage is < 10.2V. Skip if it's zero, which means no
+	// voltage sample has been read yet.
+	// XXX watchdog / timer to detect too-long-since-sample condition
+	if (voltage != 0 && voltage < 10200) {
+		// The battery is low, or otherwise has massively drooped.
+		// To avoid knackering it, turn everything off and blink the
+		// charge light.
+		shut_down_everything();
+
+		while (1) {
+			led_toggle_flat();
+			delay(2000);
+		}
+	}
 	return;
 }
 
