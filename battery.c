@@ -10,6 +10,11 @@
 
 #include "led.h"
 
+#define INA219_ADDR_BATT 0x40
+#define INA219_ADDR_SMPS 0x41
+#define INA219_REG_VSHUNT 1
+#define INA219_REG_VBUS 2
+
 void battery_init(void) {
 	// We poll the battery current sense / voltage sense to see whether
 	// something is wrong. Reads that are too close together cause the
