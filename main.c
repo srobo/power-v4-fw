@@ -138,5 +138,6 @@ main()
 		battery_poll();
 		check_batt_current_limit();
 		check_batt_undervolt();
+		button_poll();
 	}
 }
