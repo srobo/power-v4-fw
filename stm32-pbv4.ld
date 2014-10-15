@@ -35,6 +35,8 @@ EXTERN (vector_table)
 /* Define the entry point of the output file. */
 ENTRY(reset_handler)
 
+EXTERN(powerboard_main);
+
 /* Define sections. */
 SECTIONS
 {
