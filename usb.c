@@ -39,7 +39,7 @@ const struct usb_interface_descriptor dummyiface = {
         .bInterfaceClass = 0,
         .bInterfaceSubClass = 0,
         .bInterfaceProtocol = 0,
-        .iInterface = 0,
+        .iInterface = 4,
 };
 
 const struct usb_dfu_descriptor dfu_function = {
@@ -60,7 +60,7 @@ const struct usb_interface_descriptor dfu_iface = {
         .bInterfaceClass = 0xFE, // Application specific class code
         .bInterfaceSubClass = 0x01, // DFU
         .bInterfaceProtocol = 0x01, // Protocol 1.0
-        .iInterface = 0,
+        .iInterface = 5,
 	.extra = &dfu_function,
 	.extralen = sizeof(dfu_function),
 };
@@ -89,6 +89,8 @@ static const char *usb_strings[] = {
         "Student Robotics",
         "Power board v4",
         "0123456789",          // XXX serial numbers
+	"Student Robotics Power board v4", // Iface 1
+	"Student Robotics Power board DFU loader", // IFace 2, DFU
 };
 
 static uint8_t usb_data_buffer[128];
