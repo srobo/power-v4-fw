@@ -125,7 +125,7 @@ check_batt_current_limit()
 }
 
 int
-main()
+powerboard_main()
 {
 
 	init();

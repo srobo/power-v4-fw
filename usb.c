@@ -28,7 +28,7 @@ static const struct usb_device_descriptor usb_descr = {
         .bNumConfigurations = 1,
 };
 
-const struct usb_dfu_descriptor dfu_function = {
+const struct usb_dfu_descriptor sr_dfu_function = {
         .bLength = sizeof(struct usb_dfu_descriptor),
         .bDescriptorType = DFU_FUNCTIONAL,
         .bmAttributes = USB_DFU_CAN_DOWNLOAD | USB_DFU_WILL_DETACH,
@@ -47,8 +47,8 @@ const struct usb_interface_descriptor dfu_iface = {
         .bInterfaceSubClass = 0x01, // DFU
         .bInterfaceProtocol = 0x01, // Protocol 1.0
         .iInterface = 4,
-	.extra = &dfu_function,
-	.extralen = sizeof(dfu_function),
+	.extra = &sr_dfu_function,
+	.extralen = sizeof(sr_dfu_function),
 };
 
 const struct usb_interface usb_ifaces[] = {{
