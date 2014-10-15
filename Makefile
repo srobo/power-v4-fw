@@ -20,7 +20,7 @@ BASE_LDFLAGS += -lc -lm -Llibopencm3/lib \
 	   -mthumb -march=armv7-m -mfix-cortex-m3-ldrd -msoft-float
 LDFLAGS = $(BASE_LDFLAGS) -T$(LDSCRIPT)
 
-O_FILES = dfu-bootloader/usbdfu.o main.o led.o output.o usart.o analogue.o usb.o fan.o smps.o piezo.o button.o battery.o pswitch.o i2c.o
+O_FILES = dfu-bootloader/usbdfu.o main.o led.o output.o usart.o analogue.o pbusb.o fan.o smps.o piezo.o button.o battery.o pswitch.o i2c.o
 TEST_O_FILES = test.o led.o output.o fan.o smps.o piezo.o button.o battery.o usart.o pswitch.o cdcacm.o analogue.o i2c.o
 
 all: bootloader pbv4.bin pbv4_test.bin
