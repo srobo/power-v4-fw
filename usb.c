@@ -132,8 +132,8 @@ handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 			break;
 
 		*len = 4;
-		u32ptr = (uint32_t*)buf;
-		*u32ptr = button_pressed();
+		u32ptr = (uint32_t*)*buf;
+		*u32ptr++ = button_pressed();
 		result = USBD_REQ_HANDLED;
 		break;
 	case POWERBOARD_READ_FWVER:
