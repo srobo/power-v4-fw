@@ -49,6 +49,7 @@ SECTIONS
 		gpio*.o(.text*)
 		rcc*.o(.text*)
 		*memcpy*.o(.text*) /* THIS IS WHY WE CAN'T HAVE NICE THINGS */
+		*strlen*.o(.text*) /* ALSO THIS */
 		*(.bootloader)
 		dfu-bootloader/usbdfu.o(.rodata*) /* USB descriptors */
 		/* . = 0x08002000; This doesn't work, dunno why */
