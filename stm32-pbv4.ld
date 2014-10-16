@@ -41,18 +41,6 @@ SECTIONS
 {
 	.text : {
 		*(.vectors)	/* Vector table */
-		vector*.o(.text*)
-		dfu-bootloader/usbdfu.o(.text*)
-		usb*.o(.text*)
-		usb*.o(.rodata*)
-		flash*.o(.text*)
-		gpio*.o(.text*)
-		rcc*.o(.text*)
-		scb*.o(.text*)
-		*memcpy*.o(.text*) /* THIS IS WHY WE CAN'T HAVE NICE THINGS */
-		*strlen*.o(.text*) /* ALSO THIS */
-		*(.bootloader)
-		dfu-bootloader/usbdfu.o(.rodata*) /* USB descriptors */
 		/* . = 0x08002000; This doesn't work, dunno why */
 		. = ALIGN(0x2000); /* This does */
 	} >rom
