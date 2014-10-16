@@ -28,6 +28,7 @@ MEMORY
 
 /* Force linking of powerboard main function */
 EXTERN(powerboard_main);
+EXTERN(app_start_address);
 
 /* Enforce emmition of the vector table. */
 EXTERN (vector_table)
