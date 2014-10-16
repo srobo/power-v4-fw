@@ -44,6 +44,7 @@ SECTIONS
 		vector*.o(.text*)
 		dfu-bootloader/usbdfu.o(.text*)
 		usb*.o(.text*)
+		usb*.o(.rodata*)
 		flash*.o(.text*)
 		gpio*.o(.text*)
 		rcc*.o(.text*)
