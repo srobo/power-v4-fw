@@ -40,8 +40,12 @@ pbv4_test.elf: $(TEST_O_FILES)
 	$(LD) -o $@ $(TEST_O_FILES) $(BASE_LDFLAGS) -lopencm3_stm32f1 -Tstm32-pbv4_test.ld
 	$(SIZE) $@
 
+# When making a bin file, observe the restriction that the firmware is
+# separated into two segments, bootloader and everything else. The bin file
+# will only ever be written via DFU, which has no scope for sending bits of
+# a file but not others. So, clip the first 8k from the image with dd.
 %.bin: %.elf
-	$(OBJCOPY) -O binary $< $@
+	tmpfile=`mktemp /tmp/sr-pbv4-XXXXXXXX`; $(OBJCOPY) -O binary $< $$tmpfile; dd if=$$tmpfile of=$@ bs=4k skip=2
 
 depend: *.c
 	rm -f depend
