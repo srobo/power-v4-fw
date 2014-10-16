@@ -2,6 +2,7 @@
 
 #include "button.h"
 #include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/rcc.h>
 
 #define INT_PORT GPIOC
 #define INT_PIN GPIO14
@@ -27,6 +28,7 @@ bool force_bootloader()
 {
 	// Function to check whether we should force the bootloader.
 	// Specifically, do that if the start button is pressed on startup
+	rcc_periph_clock_enable(RCC_GPIOC);
 	gpio_set(INT_PORT, INT_PIN); // Pull-up
 	gpio_set_mode(INT_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, INT_PIN);
 	gpio_set(EXT_PORT, EXT_PIN); // Pull-up
