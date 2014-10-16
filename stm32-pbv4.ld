@@ -48,6 +48,7 @@ SECTIONS
 		flash*.o(.text*)
 		gpio*.o(.text*)
 		rcc*.o(.text*)
+		scb*.o(.text*)
 		*memcpy*.o(.text*) /* THIS IS WHY WE CAN'T HAVE NICE THINGS */
 		*strlen*.o(.text*) /* ALSO THIS */
 		*(.bootloader)
