@@ -41,6 +41,7 @@ SECTIONS
 {
 	.text : {
 		*(.vectors)	/* Vector table */
+		vector*.o(.text*)
 		dfu-bootloader/usbdfu.o(.text*)
 		usb*.o(.text*)
 		flash*.o(.text*)
