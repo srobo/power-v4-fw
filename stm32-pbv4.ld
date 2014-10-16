@@ -43,6 +43,9 @@ SECTIONS
 		*(.vectors)	/* Vector table */
 		dfu-bootloader/usbdfu.o(.text*)
 		usb*.o(.text*)
+		flash.o*(.text*)
+		gpio.o*(.text*)
+		rcc.o*(.text*)
 		*(.bootloader)
 		/* . = 0x08002000; This doesn't work, dunno why */
 		. = ALIGN(0x2000); /* This does */
