@@ -80,3 +80,4 @@ debug: pbv4_test.elf
 
 clean:
 	-rm -f pbv4.elf depend *.o
+	$(MAKE) -C dfu-bootloader clean
