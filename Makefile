@@ -32,7 +32,7 @@ include depend
 bootloader:
 	$(MAKE) -C dfu-bootloader
 
-pbv4.elf: $(O_FILES) $(LD_SCRIPT)
+pbv4.elf: $(O_FILES) $(LDSCRIPT)
 	$(LD) -o $@ $(O_FILES) $(LDFLAGS) -lopencm3_stm32f1
 	$(SIZE) $@
 
