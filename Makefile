@@ -13,24 +13,24 @@ OOCD_BOARD = oocd/pbv4.cfg
 
 CFLAGS += -mcpu=cortex-m3 -mthumb -msoft-float -DSTM32F1 \
 	  -Wall -Wextra -Os -std=gnu99 -g -fno-common \
-	  -Ilibopencm3/include -DFW_VER=$(FW_VER)
+	  -Ilibopencm3/include -DFW_VER=$(FW_VER) -g
 BASE_LDFLAGS += -lc -lm -Llibopencm3/lib \
 	   -Llibopencm3/lib/stm32/f1 -lnosys \
 	   -nostartfiles -Wl,--gc-sections,-Map=pbv4.map -mcpu=cortex-m3 \
 	   -mthumb -march=armv7-m -mfix-cortex-m3-ldrd -msoft-float
 LDFLAGS = $(BASE_LDFLAGS) -T$(LDSCRIPT)
 
-O_FILES = dfu-bootloader/usbdfu.o main.o led.o output.o usart.o analogue.o pbusb.o fan.o smps.o piezo.o button.o battery.o pswitch.o i2c.o
+O_FILES = main.o led.o output.o usart.o analogue.o pbusb.o fan.o smps.o piezo.o button.o battery.o pswitch.o i2c.o
 TEST_O_FILES = test.o led.o output.o fan.o smps.o piezo.o button.o battery.o usart.o pswitch.o cdcacm.o analogue.o i2c.o
 
-all: bootloader pbv4.bin pbv4_test.bin
+all: $(O_FILES) bootloader pbv4.bin pbv4_test.bin
 
 test: pbv4_test.bin
 
 include depend
 
 bootloader:
-	$(MAKE) -C dfu-bootloader
+	FORCE_BOOTLOADER_OBJ=`pwd`/button.o $(MAKE) -C dfu-bootloader
 
 pbv4.elf: $(O_FILES) $(LDSCRIPT)
 	$(LD) -o $@ $(O_FILES) $(LDFLAGS) -lopencm3_stm32f1
