@@ -125,7 +125,7 @@ check_batt_current_limit()
 }
 
 int
-powerboard_main()
+main()
 {
 
 	init();
@@ -145,4 +145,4 @@ powerboard_main()
 // Configure application start address, put in section that'll be placed at
 // the start of the non-bootloader firmware
 uint32_t app_start_address __attribute__((section(".lolstartup")))
-	= (uint32_t)&powerboard_main;
+	= (uint32_t)&main;
