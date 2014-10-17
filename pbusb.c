@@ -232,29 +232,20 @@ control(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
 }
 
 
-static bool in_dfu_iface = false;
-
 static int
 iface_control(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
 	uint16_t *len,
 	void (**complete)(usbd_device *usbd_dev, struct usb_setup_data *req))
 {
 
-	// Do nothing if we're in the DFU iface
-	if (in_dfu_iface)
-		return USBD_REQ_NEXT_CALLBACK;
-
 	// Handle only set_iface, with no alternative ifaces.
 	if (req->bRequest == USB_REQ_SET_INTERFACE && req->wValue == 0) {
 		// Two ifaces: this one and DFU.
 		if (req->wIndex == 0) {
-			disable_dfu_iface();
-			in_dfu_iface = false;
 			return USBD_REQ_HANDLED;
 		} else if (req->wIndex == 1) {
-			enable_dfu_iface();
-			in_dfu_iface = false;
-			return USBD_REQ_HANDLED;
+			// Do a special dance
+			while (1) ;
 		}
 	}
 
@@ -279,16 +270,6 @@ set_config_cb(usbd_device *usbd_dev, uint16_t wValue)
 		  USB_REQ_TYPE_STANDARD | USB_REQ_TYPE_INTERFACE,
 		  USB_REQ_TYPE_TYPE | USB_REQ_TYPE_RECIPIENT,
 		  iface_control);
-
-  // Finally, register DFU iface handler. This is gated by the enable/disable
-  // dfu iface functions. When we're set to that interface, it'll handle all
-  // DFU related things.
-  disable_dfu_iface();
-  usbd_register_control_callback(usbd_dev,
-		  USB_REQ_TYPE_STANDARD | USB_REQ_TYPE_INTERFACE,
-		  USB_REQ_TYPE_TYPE | USB_REQ_TYPE_RECIPIENT,
-		  usbdfu_control_request);
-
 }
 
 void
