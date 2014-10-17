@@ -20,6 +20,8 @@
 #include "usb.h"
 #include "i2c.h"
 
+#include "dfu-bootloader/usbdfu.h"
+
 #define delay(x) do { for (int i = 0; i < x * 1000; i++) \
                           __asm__("nop"); \
                     } while(0)
@@ -139,6 +141,12 @@ main()
 		check_batt_current_limit();
 		check_batt_undervolt();
 		button_poll();
+
+		if (re_enter_bootloader) {
+			usb_deinit();
+			// Call back into bootloader
+			(*(void (**)())(REENTER_BOOTLOADER_RENDEZVOUS))();
+		}
 	}
 }
 

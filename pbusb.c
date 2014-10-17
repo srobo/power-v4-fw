@@ -9,8 +9,6 @@
 #include "battery.h"
 #include "button.h"
 
-#include "dfu-bootloader/usbdfu.h"
-
 #define delay(x) do { for (int i = 0; i < x * 1000; i++) \
                           __asm__("nop"); \
                     } while(0);
