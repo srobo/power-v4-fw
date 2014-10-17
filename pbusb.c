@@ -243,10 +243,9 @@ iface_control(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
 	if (req->bRequest == USB_REQ_SET_INTERFACE && req->wValue == 0) {
 		// Two ifaces: this one and DFU.
 		if (req->wIndex == 0) {
-			return USBD_REQ_HANDLED;
-		} else if (req->wIndex == 1) {
 			// Do a special dance
 			re_enter_bootloader = true;
+			return USBD_REQ_HANDLED;
 		}
 	}
 
