@@ -5,6 +5,7 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/cm3/systick.h>
+#include <libopencm3/cm3/nvic.h>
 
 #include "led.h"
 #include "cdcacm.h"
@@ -149,6 +150,10 @@ main()
 			delay(20);
 			// Now reset USB
 			usb_deinit();
+			// Disable any irqs that there are. XXX this is likely
+			// to get out of sync.
+			nvic_disable_irq(NVIC_ADC1_2_IRQ);
+			nvic_disable_irq(NVIC_TIM2_IRQ);
 			// Call back into bootloader
 			(*(void (**)())(REENTER_BOOTLOADER_RENDEZVOUS))();
 		}
