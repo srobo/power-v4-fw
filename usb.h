@@ -19,4 +19,7 @@
 #define POWERBOARD_READ_FWVER		9
 
 void usb_init();
+void usb_deinit();
 void usb_poll();
+
+extern bool re_enter_bootloader;

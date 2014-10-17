@@ -11,6 +11,10 @@
 
 #include "dfu-bootloader/usbdfu.h"
 
+#define delay(x) do { for (int i = 0; i < x * 1000; i++) \
+                          __asm__("nop"); \
+                    } while(0);
+
 bool re_enter_bootloader = false;
 
 static usbd_device *usbd_dev;
@@ -285,6 +289,25 @@ usb_init()
   usbd_register_set_config_callback(usbd_dev, set_config_cb);
 
   gpio_set(GPIOA, GPIO8);
+}
+
+void
+usb_deinit()
+{
+
+  // Gate USB; this will cause a reset for us and the  host.
+  gpio_clear(GPIOA, GPIO8);
+
+  // Do nothing for a few ms, then poll a few times to ensure that the driver
+  // has reset itself
+  delay(20);
+  usbd_poll(usbd_dev);
+  usbd_poll(usbd_dev);
+  usbd_poll(usbd_dev);
+  usbd_poll(usbd_dev);
+
+  // That should be enough
+  return;
 }
 
 void
