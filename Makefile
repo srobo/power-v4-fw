@@ -23,7 +23,7 @@ LDFLAGS = $(BASE_LDFLAGS) -T$(LDSCRIPT)
 O_FILES = main.o led.o output.o usart.o analogue.o pbusb.o fan.o smps.o piezo.o button.o battery.o pswitch.o i2c.o dfu-bootloader/usb_dfu_blob.o
 TEST_O_FILES = test.o led.o output.o fan.o smps.o piezo.o button.o battery.o usart.o pswitch.o cdcacm.o analogue.o i2c.o
 
-all: $(O_FILES) bootloader pbv4.bin pbv4_test.bin
+all: button.o bootloader $(O_FILES) pbv4.bin pbv4_test.bin
 
 test: pbv4_test.bin
 
