@@ -11,6 +11,7 @@ OOCD = openocd
 LDSCRIPT = stm32-pbv4.ld
 OOCD_BOARD = oocd/pbv4.cfg
 
+# Export these facts to bootloader
 SR_BOOTLOADER_VID=0x1BDA
 SR_BOOTLOADER_PID=0x0001
 SR_BOOTLOADER_REV=0x0004
@@ -18,7 +19,10 @@ export SR_BOOTLOADER_VID SR_BOOTLOADER_PID SR_BOOTLOADER_REV
 
 CFLAGS += -mcpu=cortex-m3 -mthumb -msoft-float -DSTM32F1 \
 	  -Wall -Wextra -Os -std=gnu99 -g -fno-common \
-	  -Ilibopencm3/include -DFW_VER=$(FW_VER) -g
+	  -Ilibopencm3/include -DFW_VER=$(FW_VER) -g \
+	  -DSR_DEV_VID=$(SR_BOOTLOADER_VID) \
+	  -DSR_DEV_PID=$(SR_BOOTLOADER_PID) \
+	  -DSR_DEV_REV=$(SR_BOOTLOADER_REV)
 BASE_LDFLAGS += -lc -lm -Llibopencm3/lib \
 	   -Llibopencm3/lib/stm32/f1 -lnosys \
 	   -nostartfiles -Wl,--gc-sections,-Map=pbv4.map -mcpu=cortex-m3 \
