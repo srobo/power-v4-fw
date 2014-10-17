@@ -23,7 +23,7 @@ LDFLAGS = $(BASE_LDFLAGS) -T$(LDSCRIPT)
 O_FILES = main.o led.o output.o usart.o analogue.o pbusb.o fan.o smps.o piezo.o button.o battery.o pswitch.o i2c.o dfu-bootloader/usb_dfu_blob.o
 TEST_O_FILES = test.o led.o output.o fan.o smps.o piezo.o button.o battery.o usart.o pswitch.o cdcacm.o analogue.o i2c.o
 
-all: button.o bootloader $(O_FILES) pbv4.bin pbv4_test.bin
+all: button.o bootloader $(O_FILES) pbv4.bin pbv4_test.bin pbv4_noboot.bin
 
 test: pbv4_test.bin
 
@@ -42,6 +42,11 @@ pbv4_test.elf: $(TEST_O_FILES)
 
 %.bin: %.elf
 	$(OBJCOPY) -O binary $< $@
+
+# Produce a no-bootloader binary, suitable for shunting straight into the app
+# segment of flash, by droping the first 8k of the flat image.
+pbv4_noboot.bin: pbv4.elf
+	tmpfile=`mktemp /tmp/sr-pbv4-XXXXXXXX`; $(OBJCOPY) -O binary $< $$tmpfile; dd if=$$tmpfile of=$@ bs=4k skip=2; rm $$tmpfile
 
 depend: *.c
 	rm -f depend
