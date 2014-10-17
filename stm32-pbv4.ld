@@ -44,8 +44,8 @@ SECTIONS
 	. = 0x2000;
 	} >rom
 	.text : {
-		*(.vectors)	/* Vector table */
 		main.o(.lolstartup)
+		*(.vectors)	/* Vector table */
 		*(.text*)	/* Program code */
 		. = ALIGN(4);
 		*(.rodata*)	/* Read-only data */
