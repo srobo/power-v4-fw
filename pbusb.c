@@ -241,11 +241,32 @@ iface_control(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
 	void (**complete)(usbd_device *usbd_dev, struct usb_setup_data *req))
 {
 
-	// Handle only set_iface, with no alternative ifaces.
-	if (req->bRequest == USB_REQ_SET_INTERFACE && req->wValue == 0) {
+	// For standard requests, handle only set_iface, with no alternative
+	// ifaces.
+	if (req->bmRequestType == (USB_REQ_TYPE_STANDARD|USB_REQ_TYPE_INTERFACE)
+			&& req->bRequest == USB_REQ_SET_INTERFACE
+			&& req->wValue == 0) {
 		// Two ifaces: this one and DFU.
 		if (req->wIndex == 0) {
-			// Do a special dance
+			// Do a special dance; but later.
+			return USBD_REQ_HANDLED;
+		}
+	}
+
+	// Otherwise, we might be getting DFU requests
+	if (req->bmRequestType == (USB_REQ_TYPE_CLASS | USB_REQ_TYPE_INTERFACE))
+	{
+		switch (req->bRequest) {
+		case DFU_GETSTATE:
+			*len = 6;
+			(*buf)[0] = STATE_APP_IDLE;
+			(*buf)[1] = 100; // ms
+			(*buf)[2] = 0;
+			(*buf)[3] = 0;
+			(*buf)[4] = STATE_APP_IDLE;
+			(*buf)[5] = 0;
+			return USBD_REQ_HANDLED;
+		case DFU_DETACH:
 			re_enter_bootloader = true;
 			return USBD_REQ_HANDLED;
 		}
