@@ -279,6 +279,16 @@ set_config_cb(usbd_device *usbd_dev, uint16_t wValue)
 		  USB_REQ_TYPE_STANDARD | USB_REQ_TYPE_INTERFACE,
 		  USB_REQ_TYPE_TYPE | USB_REQ_TYPE_RECIPIENT,
 		  iface_control);
+
+  // Finally, register DFU iface handler. This is gated by the enable/disable
+  // dfu iface functions. When we're set to that interface, it'll handle all
+  // DFU related things.
+  disable_dfu_iface();
+  usbd_register_control_callback(usbd_dev,
+		  USB_REQ_TYPE_STANDARD | USB_REQ_TYPE_INTERFACE,
+		  USB_REQ_TYPE_TYPE | USB_REQ_TYPE_RECIPIENT,
+		  usbdfu_control_request);
+
 }
 
 void
