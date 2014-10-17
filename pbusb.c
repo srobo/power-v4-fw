@@ -9,6 +9,8 @@
 #include "battery.h"
 #include "button.h"
 
+#include "dfu-bootloader/usbdfu.h"
+
 static usbd_device *usbd_dev;
 
 static const struct usb_device_descriptor usb_descr = {
@@ -229,6 +231,36 @@ control(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
 	}
 }
 
+
+static bool in_dfu_iface = false;
+
+static int
+iface_control(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
+	uint16_t *len,
+	void (**complete)(usbd_device *usbd_dev, struct usb_setup_data *req))
+{
+
+	// Do nothing if we're in the DFU iface
+	if (in_dfu_iface)
+		return USBD_REQ_NEXT_CALLBACK;
+
+	// Handle only set_iface, with no alternative ifaces.
+	if (req->bRequest == USB_REQ_SET_INTERFACE && req->wValue == 0) {
+		// Two ifaces: this one and DFU.
+		if (req->wIndex == 0) {
+			disable_dfu_iface();
+			in_dfu_iface = false;
+			return USBD_REQ_HANDLED;
+		} else if (req->wIndex == 1) {
+			enable_dfu_iface();
+			in_dfu_iface = false;
+			return USBD_REQ_HANDLED;
+		}
+	}
+
+	return USBD_REQ_NOTSUPP;
+}
+
 static void
 set_config_cb(usbd_device *usbd_dev, uint16_t wValue)
 {
@@ -239,6 +271,14 @@ set_config_cb(usbd_device *usbd_dev, uint16_t wValue)
   usbd_register_control_callback(usbd_dev, USB_REQ_TYPE_DEVICE,
 		  USB_REQ_TYPE_TYPE | USB_REQ_TYPE_RECIPIENT,
 		  control);
+
+  // Additionally, register our own SR-interface callback. This is simply to
+  // handle SET_INTERFACE, which libopencm3 doesn't do. Filter options are to
+  // match standard request, to the interface recipient.
+  usbd_register_control_callback(usbd_dev,
+		  USB_REQ_TYPE_STANDARD | USB_REQ_TYPE_INTERFACE,
+		  USB_REQ_TYPE_TYPE | USB_REQ_TYPE_RECIPIENT,
+		  iface_control);
 }
 
 void
