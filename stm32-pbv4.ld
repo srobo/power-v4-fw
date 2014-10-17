@@ -40,11 +40,11 @@ ENTRY(reset_handler)
 SECTIONS
 {
 	.text : {
-		*(.vectors)	/* Vector table */
-		/* . = 0x08002000; This doesn't work, dunno why */
-		. = ALIGN(0x2000); /* This does */
+		dfu-bootloader/usb_dfu_blob.o(*)
 	} >rom
+	. = 0x08002000;
 	.text : {
+		*(.vectors)	/* Vector table */
 		main.o(.lolstartup)
 		*(.text*)	/* Program code */
 		. = ALIGN(4);
