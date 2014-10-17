@@ -11,6 +11,8 @@
 
 #include "dfu-bootloader/usbdfu.h"
 
+bool re_enter_bootloader = false;
+
 static usbd_device *usbd_dev;
 
 static const struct usb_device_descriptor usb_descr = {
@@ -245,7 +247,7 @@ iface_control(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
 			return USBD_REQ_HANDLED;
 		} else if (req->wIndex == 1) {
 			// Do a special dance
-			while (1) ;
+			re_enter_bootloader = true;
 		}
 	}
 
