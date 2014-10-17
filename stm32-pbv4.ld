@@ -33,7 +33,7 @@ EXTERN(app_start_address);
 EXTERN (vector_table)
 
 /* Define the entry point of the output file. */
-ENTRY(reset_handler)
+ENTRY(bootloader_entry)
 
 /* Define sections. */
 SECTIONS
