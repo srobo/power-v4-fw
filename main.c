@@ -143,6 +143,11 @@ main()
 		button_poll();
 
 		if (re_enter_bootloader) {
+			// Because spoons can't be used as forks, we have to
+			// actually wait for the usb peripheral to complete
+			// it's acknowledgement to dfu_detach
+			delay(20);
+			// Now reset USB
 			usb_deinit();
 			// Call back into bootloader
 			(*(void (**)())(REENTER_BOOTLOADER_RENDEZVOUS))();
