@@ -146,7 +146,7 @@ main()
 // the start of the non-bootloader firmware. The actual start address is
 // libopencm3's reset handler, seeing how that's what copies .data into sram.
 extern void *vector_table;
-extern __attribute__((naked)) reset_handler(void);
+extern __attribute__((naked)) void reset_handler(void);
 uint32_t app_start_address[2] __attribute__((section(".lolstartup"))) =
 {
 	(uint32_t)&vector_table,
