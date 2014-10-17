@@ -254,10 +254,11 @@ iface_control(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
 	}
 
 	// Otherwise, we might be getting DFU requests
-	if (req->bmRequestType == (USB_REQ_TYPE_CLASS | USB_REQ_TYPE_INTERFACE))
+	if ((req->bmRequestType & (USB_REQ_TYPE_TYPE | USB_REQ_TYPE_RECIPIENT))
+		== (USB_REQ_TYPE_CLASS | USB_REQ_TYPE_INTERFACE))
 	{
 		switch (req->bRequest) {
-		case DFU_GETSTATE:
+		case DFU_GETSTATUS:
 			*len = 6;
 			(*buf)[0] = STATE_APP_IDLE;
 			(*buf)[1] = 100; // ms
@@ -291,6 +292,13 @@ set_config_cb(usbd_device *usbd_dev, uint16_t wValue)
   // match standard request, to the interface recipient.
   usbd_register_control_callback(usbd_dev,
 		  USB_REQ_TYPE_STANDARD | USB_REQ_TYPE_INTERFACE,
+		  USB_REQ_TYPE_TYPE | USB_REQ_TYPE_RECIPIENT,
+		  iface_control);
+
+  // Use the same function to catch initial DFU requests. These are class
+  // commands.
+  usbd_register_control_callback(usbd_dev,
+		  USB_REQ_TYPE_CLASS | USB_REQ_TYPE_INTERFACE,
 		  USB_REQ_TYPE_TYPE | USB_REQ_TYPE_RECIPIENT,
 		  iface_control);
 }
