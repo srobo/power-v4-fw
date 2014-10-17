@@ -40,7 +40,7 @@ ENTRY(reset_handler)
 SECTIONS
 {
 	.text : {
-		dfu-bootloader/usb_dfu_blob.o(*)
+		dfu-bootloader/usb_dfu_blob.o*(*)
 	} >rom
 	. = 0x08002000;
 	.text : {
