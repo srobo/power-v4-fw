@@ -233,7 +233,6 @@ control(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
 	}
 }
 
-
 static int
 iface_control(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
 	uint16_t *len,
