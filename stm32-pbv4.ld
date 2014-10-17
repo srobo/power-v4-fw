@@ -40,9 +40,10 @@ ENTRY(reset_handler)
 SECTIONS
 {
 	.text : {
-		dfu-bootloader/usb_dfu_blob.o*(*)
+		*usb_dfu_blob*.o*(.text*)
+		FILL(0)
+	. = 0x2000;
 	} >rom
-	. = 0x08002000;
 	.text : {
 		*(.vectors)	/* Vector table */
 		main.o(.lolstartup)
