@@ -3,7 +3,7 @@
 import sys
 import struct
 import argparse
-from usb1 import * # In lieu of packages for pyusb, I `pip install libusb1`'d.
+import usb # pyusb
 
 parser = argparse.ArgumentParser()
 parser.add_argument("reqtype", help="read or write")
@@ -56,13 +56,20 @@ req_id = req_map[args.reqname]
 
 ###############################################################################
 
-ctx = USBContext()
-dev = ctx.getByVendorIDAndProductID(0x1bda, 1)
+all_busses = list(usb.busses())
+all_devices = []
+for b in all_busses:
+	all_devices = all_devices + (list(b.devices))
+list_of_power_boards = [d for d in all_devices if (d.idVendor == 0x1bda and d.idProduct == 0x10)]
 
-if dev == None:
-    print >>sys.stderr, "Could not find power board attached"
-    sys.exit(1)
+if len(list_of_power_boards) == 0:
+	print >>sys.stderr, "No power board found"
+	sys.exit(1)
+elif len(list_of_power_boards) != 1:
+	print >>sys.stderr, "More than one power board found"
+	sys.exit(1)
 
+dev = list_of_power_boards[0]
 handle = dev.open()
 
 if handle == None:
@@ -70,7 +77,9 @@ if handle == None:
     sys.exit(1)
 
 if is_read:
-    ret = handle.controlRead(0x80, 64, 0, req_id, 8)
+    ret = handle.controlMsg(0x80, 64, 8, 0, req_id)
+    ret = list(ret)
+    ret = "".join(map(chr, ret))
     if len(ret) == 4:
         a, = struct.unpack("i", ret)
         print "{0}".format(a)
@@ -81,4 +90,4 @@ if is_read:
         print >>sys.stderr, "Short read (or otherwise), board returned {0} bytes".format(len(ret))
         sys.exit(1)
 else:
-    handle.controlWrite(0, 64, args.argument, req_id, "")
+    handle.controlMsg(0, 64, 0, args.argument, req_id)
