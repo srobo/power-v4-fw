@@ -132,6 +132,23 @@ check_batt_current_limit()
 }
 
 void
+timer_check()
+{
+
+	// After 1000ms of start time, check whether the battery is in a healthy
+	// condition.
+	if (on_time == 1000) {
+		uint32_t voltage = read_battery_voltage();
+
+		if (voltage > 10200) {
+			// Battery is OK (TM), start the rest of the board.
+			fan_on();
+			smps_on();
+		}
+	}
+}
+
+void
 jump_to_bootloader()
 {
 
@@ -166,6 +183,7 @@ main()
 		check_batt_current_limit();
 		check_batt_undervolt();
 		button_poll();
+		timer_check();
 
 		if (clock_tick())
 			on_time++;
