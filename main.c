@@ -85,10 +85,10 @@ check_batt_undervolt()
 {
 	uint32_t voltage = read_battery_voltage();
 
-	// Check if voltage is < 10.2V. Skip if it's zero, which means no
-	// voltage sample has been read yet.
+	// Check if voltage is < 10.2V. Wait til 4ms after start for opportunity
+	// to get samples.
 	// XXX watchdog / timer to detect too-long-since-sample condition
-	if (voltage != 0 && voltage < 10200) {
+	if (on_time > 4 && voltage < 10200) {
 		// The battery is low, or otherwise has massively drooped.
 		// To avoid knackering it, turn everything off and blink the
 		// charge light.
