@@ -207,7 +207,6 @@ main()
 		current_sense_poll();
 		i2c_poll();
 		battery_poll();
-		button_poll();
 		timer_check();
 
 		if (clock_tick()) {
