@@ -30,8 +30,15 @@
 
 static uint32_t on_time; // Measured in milliseconds
 
-static uint32_t current_iir;
-static uint32_t voltage_iir = 1020000;
+// Two IIRs, one for voltage and the other for current. These decay at the rate
+// configured below, and cause UVLO or current-cutoff at the configured limits.
+#define CURRENT_IIR_DECAY 100
+#define VOLTAGE_IIR_DECAY 100
+#define CURRENT_IIR_MAXVAL 1000 * CURRENT_IIR_DECAY /* 1000mA */
+#define VOLTAGE_IIR_MINVAL 10200 * VOLTAGE_IIR_DECAY /* 10.2V */
+
+static uint32_t current_iir = CURRENT_IIR_MAXVAL;
+static uint32_t voltage_iir = VOLTAGE_IIR_MINVAL;
 
 void
 init()
@@ -88,14 +95,14 @@ void
 check_batt_undervolt()
 {
 	uint32_t voltage_sample = read_battery_voltage();
-	uint32_t tmp = voltage_iir / 100;
+	uint32_t tmp = voltage_iir / VOLTAGE_IIR_DECAY;
 	voltage_iir -= tmp;
 	voltage_iir += voltage_sample;
 
 	// Check if voltage is < 10.2V. Wait til 4ms after start for opportunity
 	// to get samples. IIR value is guessed from experimentation.
 	// XXX watchdog / timer to detect too-long-since-sample condition
-	if (on_time > 100 && voltage_iir < 1020000) {
+	if (on_time > 100 && voltage_iir < VOLTAGE_IIR_MINVAL) {
 		// The battery is low, or otherwise has massively drooped.
 		// To avoid knackering it, turn everything off and blink the
 		// charge light.
@@ -109,15 +116,20 @@ check_batt_undervolt()
 	return;
 }
 
+static uint32_t max_curr_sample;
+
 void
 check_batt_current_limit()
 {
 	uint32_t current_sample = read_battery_current();
-	uint32_t tmp = current_iir / 1000;
+	uint32_t tmp = current_iir / CURRENT_IIR_DECAY;
 	current_iir -= tmp;
 	current_iir += current_sample;
 
-	if (current_iir > 1000000) { // 1A, ish?
+	if (current_sample > max_curr_sample)
+		max_curr_sample = current_sample;
+
+	if (current_iir > CURRENT_IIR_MAXVAL) { // 1A, ish?
 		// Something is wrong.
 		shut_down_everything();
 
