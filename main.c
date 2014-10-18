@@ -30,6 +30,9 @@
 
 static uint32_t on_time; // Measured in milliseconds
 
+static uint32_t current_samples[4];
+static uint32_t voltage_samples[4];
+
 void
 init()
 {
@@ -85,11 +88,17 @@ void
 check_batt_undervolt()
 {
 	uint32_t voltage = read_battery_voltage();
+	voltage_samples[on_time & 3] = voltage;
+
+	bool all_too_low = true;
+	for (int i = 0; i < 4; i++)
+		if (voltage_samples[i] < 40000)
+			all_too_low = false;
 
 	// Check if voltage is < 10.2V. Wait til 4ms after start for opportunity
 	// to get samples.
 	// XXX watchdog / timer to detect too-long-since-sample condition
-	if (on_time > 4 && voltage < 10200) {
+	if (on_time > 4 && all_too_low) {
 		// The battery is low, or otherwise has massively drooped.
 		// To avoid knackering it, turn everything off and blink the
 		// charge light.
@@ -107,7 +116,14 @@ void
 check_batt_current_limit()
 {
 	uint32_t current = read_battery_current();
-	if (current >= 40000) {
+	current_samples[on_time & 3] = current;
+
+	bool all_too_high = true;
+	for (int i = 0; i < 4; i++)
+		if (current_samples[i] < 40000)
+			all_too_high = false;
+
+	if (all_too_high) {
 		// Something is wrong.
 		shut_down_everything();
 
