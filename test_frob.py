@@ -56,38 +56,24 @@ req_id = req_map[args.reqname]
 
 ###############################################################################
 
-all_busses = list(usb.busses())
-all_devices = []
-for b in all_busses:
-	all_devices = all_devices + (list(b.devices))
-list_of_power_boards = [d for d in all_devices if (d.idVendor == 0x1bda and d.idProduct == 0x10)]
+import power
 
-if len(list_of_power_boards) == 0:
-	print >>sys.stderr, "No power board found"
-	sys.exit(1)
-elif len(list_of_power_boards) != 1:
-	print >>sys.stderr, "More than one power board found"
-	sys.exit(1)
-
-dev = list_of_power_boards[0]
-handle = dev.open()
-
-if handle == None:
-    print >>sys.stderr, "Could not open power board"
-    sys.exit(1)
+p = power.Power()
 
 if is_read:
-    ret = handle.controlMsg(0x80, 64, 8, 0, req_id)
-    ret = list(ret)
-    ret = "".join(map(chr, ret))
-    if len(ret) == 4:
-        a, = struct.unpack("i", ret)
-        print "{0}".format(a)
-    elif len(ret) == 8:
-        a, b = struct.unpack("ii", ret)
-        print "{0} {1}".format(a, b)
-    else:
-        print >>sys.stderr, "Short read (or otherwise), board returned {0} bytes".format(len(ret))
+    if req_id < 7:
+        print >>sys.stderr, "EUNIMPLEMENTED"
         sys.exit(1)
+    elif req_id == 7:
+        res = p.read_batt_status()
+    elif req_id == 8:
+        res = p.read_button()
+    print repr(res)
 else:
-    handle.controlMsg(0, 64, 0, args.argument, req_id)
+    b = not (args.argument == 0)
+    if (req_id < 6):
+        p.set_output_rail(req_id, b)
+    elif (req_id == 6):
+        p.set_run_led(b)
+    else:
+        p.set_error_led(b)
