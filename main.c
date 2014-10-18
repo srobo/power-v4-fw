@@ -131,6 +131,25 @@ check_batt_current_limit()
 	}
 }
 
+void
+jump_to_bootloader()
+{
+
+	// Because spoons can't be used as forks, we have to
+	// actually wait for the usb peripheral to complete
+	// it's acknowledgement to dfu_detach
+	delay(20);
+	// Now reset USB
+	usb_deinit();
+	// Disable any irqs that there are. XXX this is likely
+	// to get out of sync.
+	nvic_disable_irq(NVIC_ADC1_2_IRQ);
+	nvic_disable_irq(NVIC_TIM2_IRQ);
+	// Call back into bootloader
+	(*(void (**)())(REENTER_BOOTLOADER_RENDEZVOUS))();
+}
+
+
 int
 main()
 {
@@ -151,20 +170,8 @@ main()
 		if (clock_tick())
 			on_time++;
 
-		if (re_enter_bootloader) {
-			// Because spoons can't be used as forks, we have to
-			// actually wait for the usb peripheral to complete
-			// it's acknowledgement to dfu_detach
-			delay(20);
-			// Now reset USB
-			usb_deinit();
-			// Disable any irqs that there are. XXX this is likely
-			// to get out of sync.
-			nvic_disable_irq(NVIC_ADC1_2_IRQ);
-			nvic_disable_irq(NVIC_TIM2_IRQ);
-			// Call back into bootloader
-			(*(void (**)())(REENTER_BOOTLOADER_RENDEZVOUS))();
-		}
+		if (re_enter_bootloader)
+			jump_to_bootloader();
 	}
 }
 
