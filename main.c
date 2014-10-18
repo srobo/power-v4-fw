@@ -20,6 +20,7 @@
 #include "analogue.h"
 #include "usb.h"
 #include "i2c.h"
+#include "clock.h"
 
 #include "dfu-bootloader/usbdfu.h"
 
@@ -50,6 +51,7 @@ init()
 	usart_init();
 	pswitch_init();
 	analogue_init();
+	clock_init();
 }
 
 void
