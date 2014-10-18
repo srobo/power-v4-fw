@@ -31,7 +31,7 @@
 static uint32_t on_time; // Measured in milliseconds
 
 static uint32_t current_iir;
-static uint32_t voltage_iir = 10200000;
+static uint32_t voltage_iir = 1020000;
 
 void
 init()
@@ -88,14 +88,14 @@ void
 check_batt_undervolt()
 {
 	uint32_t voltage_sample = read_battery_voltage();
-	uint32_t tmp = voltage_iir / 1000;
+	uint32_t tmp = voltage_iir / 100;
 	voltage_iir -= tmp;
 	voltage_iir += voltage_sample;
 
 	// Check if voltage is < 10.2V. Wait til 4ms after start for opportunity
 	// to get samples. IIR value is guessed from experimentation.
 	// XXX watchdog / timer to detect too-long-since-sample condition
-	if (on_time > 1000 && voltage_iir < 10200000) {
+	if (on_time > 100 && voltage_iir < 1020000) {
 		// The battery is low, or otherwise has massively drooped.
 		// To avoid knackering it, turn everything off and blink the
 		// charge light.
@@ -148,7 +148,7 @@ timer_check()
 
 	// After 1000ms of start time, check whether the battery is in a healthy
 	// condition.
-	if (on_time == 1000) {
+	if (on_time == 3000) {
 		uint32_t voltage = read_battery_voltage();
 
 		if (voltage > 10200) {
