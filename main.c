@@ -195,13 +195,14 @@ main()
 		current_sense_poll();
 		i2c_poll();
 		battery_poll();
-		check_batt_current_limit();
-		check_batt_undervolt();
 		button_poll();
 		timer_check();
 
-		if (clock_tick())
+		if (clock_tick()) {
+			check_batt_current_limit();
+			check_batt_undervolt();
 			on_time++;
+		}
 
 		if (re_enter_bootloader)
 			jump_to_bootloader();
