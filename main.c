@@ -28,6 +28,8 @@
                           __asm__("nop"); \
                     } while(0)
 
+static uint32_t on_time; // Measured in milliseconds
+
 void
 init()
 {
@@ -132,6 +134,7 @@ check_batt_current_limit()
 int
 main()
 {
+	on_time = 0; // Just in case
 
 	init();
 
@@ -144,6 +147,9 @@ main()
 		check_batt_current_limit();
 		check_batt_undervolt();
 		button_poll();
+
+		if (clock_tick())
+			on_time++;
 
 		if (re_enter_bootloader) {
 			// Because spoons can't be used as forks, we have to
