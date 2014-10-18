@@ -40,7 +40,7 @@ bool force_bootloader()
 	gpio_set_mode(EXT_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, EXT_PIN);
 
 	// Rise time
-	delay(1);
+	delay(10);
 
 	if (!button_int_read() || !button_ext_read())
 		return true;
