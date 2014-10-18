@@ -28,6 +28,7 @@ tim3_isr()
 {
 
 	clock_fired = true;
+	TIM_SR(TIM3) = 0;
 	return;
 }
 
