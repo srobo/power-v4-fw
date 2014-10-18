@@ -39,7 +39,7 @@ bool force_bootloader()
 	// Rise time
 	delay(10);
 
-	if (!button_int_read() || !button_ext_read())
+	if (!button_int_read() && !button_ext_read())
 		return true;
 	return false;
 }
