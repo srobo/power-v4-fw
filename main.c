@@ -189,6 +189,7 @@ jump_to_bootloader()
 	// to get out of sync.
 	nvic_disable_irq(NVIC_ADC1_2_IRQ);
 	nvic_disable_irq(NVIC_TIM2_IRQ);
+	nvic_disable_irq(NVIC_TIM3_IRQ);
 	// Call back into bootloader
 	(*(void (**)())(REENTER_BOOTLOADER_RENDEZVOUS))();
 }
