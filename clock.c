@@ -30,3 +30,18 @@ tim3_isr()
 	clock_fired = true;
 	return;
 }
+
+bool
+clock_tick(void)
+{
+	bool result = false;
+
+	nvic_disable_irq(NVIC_TIM3_IRQ);
+	if (clock_fired) {
+		result = true;
+		clock_fired = false;
+	}
+	nvic_enable_irq(NVIC_TIM3_IRQ);
+
+	return result;
+}
