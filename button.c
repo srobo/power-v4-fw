@@ -9,6 +9,11 @@
 #define EXT_PORT GPIOC
 #define EXT_PIN GPIO15
 
+#define delay(x) do { for (int i = 0; i < x * 1000; i++) \
+                          __asm__("nop"); \
+                    } while(0)
+
+
 static uint32_t debounce_int, debounce_ext;
 
 void button_init(void) {
@@ -33,6 +38,9 @@ bool force_bootloader()
 	gpio_set_mode(INT_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, INT_PIN);
 	gpio_set(EXT_PORT, EXT_PIN); // Pull-up
 	gpio_set_mode(EXT_PORT, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, EXT_PIN);
+
+	// Rise time
+	delay(1);
 
 	if (!button_int_read() || !button_ext_read())
 		return true;
