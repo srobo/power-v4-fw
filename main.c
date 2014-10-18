@@ -44,7 +44,6 @@ init()
 	usb_init();
 	i2c_init();
 	led_init();
-	output_init();
 	fan_init();
 	smps_init();
 	piezo_init();
@@ -54,6 +53,8 @@ init()
 	pswitch_init();
 	analogue_init();
 	clock_init();
+	// Don't configure outputs, to prevent a USB host turning outputs on
+	// even after battery health check has been failed
 }
 
 void
@@ -142,8 +143,12 @@ timer_check()
 
 		if (voltage > 10200) {
 			// Battery is OK (TM), start the rest of the board.
+			// Don't allow outputs to be turned on until now,
+			// in case we are powered by a battery, but controlled
+			// by something that is independently powered.
 			fan_on();
 			smps_on();
+			output_init();
 		}
 	}
 }
