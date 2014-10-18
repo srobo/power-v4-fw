@@ -8,6 +8,7 @@
 #include "led.h"
 #include "battery.h"
 #include "button.h"
+#include "dfu-bootloader/usbdfu.h"
 
 #define delay(x) do { for (int i = 0; i < x * 1000; i++) \
                           __asm__("nop"); \
@@ -77,7 +78,7 @@ static const struct usb_config_descriptor usb_config = {
 static const char *usb_strings[] = {
         "Student Robotics",
         "Power board v4",
-        "0123456789",          // XXX serial numbers
+        (const char *)SERIALNUM_BOOTLOADER_LOC,
 	"Student Robotics Power board v4", // Iface 1
 	"Student Robotics Power board DFU loader", // IFace 2, DFU
 };
