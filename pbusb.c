@@ -156,6 +156,15 @@ handle_read_req(struct usb_setup_data *req, int *len, uint8_t **buf)
 		result = USBD_REQ_HANDLED;
 		break;
 	case POWERBOARD_READ_FWVER:
+		if (*len < 4)
+			break;
+
+		*len = 4;
+
+		u32ptr = (uint32_t*)*buf;
+		*u32ptr++ = FW_VER;
+		result = USBD_REQ_HANDLED;
+		break;
 	default:
 		break;
 	}
