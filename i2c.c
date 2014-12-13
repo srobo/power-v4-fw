@@ -49,6 +49,9 @@ void i2c_init()
 			| I2C_CR2_ITERREN;
 }
 
+static ack_fail_signalled = false;
+static berr_fail_signalled = false;
+
 static void check_ack_fail()
 {
 	if (I2C_SR1(i2c) & I2C_SR1_AF) {
@@ -58,6 +61,7 @@ static void check_ack_fail()
 		I2C_SR1(i2c) &= ~I2C_SR1_AF;
 		*output_done_ptr = I2C_STAT_ERR_AF;
 		i2c_state = I2C_IDLE;
+		ack_fail_signalled = true;
 	}
 	return;
 }
@@ -69,6 +73,7 @@ static void check_berr()
 		I2C_SR1(i2c) &= ~I2C_SR1_BERR;
 		*output_done_ptr = I2C_STAT_ERR_BERR;
 		i2c_state = I2C_IDLE;
+		berr_fail_signalled = true;
 	}
 	return;
 }
