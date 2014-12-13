@@ -119,9 +119,13 @@ void battery_poll()
 		if (read_flag == I2C_STAT_NOTYET)
 			break;
 
-		// XXX do something about errors
-		// Convert the read sample into a current
-		batt_read_current = battery_current(read_sample);
+		if (!i2c_error_flag(read_flag)) {
+			// Convert the read sample into a current
+			batt_read_current = battery_current(read_sample);
+		} else {
+			batt_read_current = 0;
+		}
+
 		batt_read_state = BATT_PRE_VOLT;
 		break;
 	case BATT_PRE_VOLT:
@@ -138,9 +142,13 @@ void battery_poll()
 		if (read_flag == I2C_STAT_NOTYET)
 			break;
 
-		// XXX do something about errors
 		// Convert the read sample into a voltage
-		batt_read_voltage = battery_voltage(read_sample);
+		if (!i2c_error_flag(read_flag)) {
+			batt_read_voltage = battery_voltage(read_sample);
+		} else {
+			batt_read_voltage = 0;
+		}
+
 		batt_read_state = BATT_PRE_CURR;
 		break;
 	}

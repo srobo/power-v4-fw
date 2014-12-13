@@ -3,6 +3,8 @@
 enum i2c_stat { I2C_STAT_NOTYET, I2C_STAT_DONE, I2C_STAT_ERR_AF,
 		I2C_STAT_ERR_BERR};
 
+#define i2c_error_flag(x) ((x) == I2C_STAT_ERR_BERR || (x) == I2C_STAT_ERR_AF)
+
 void i2c_init();
 void i2c_poll();
 bool i2c_is_idle();
