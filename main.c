@@ -6,6 +6,8 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/cm3/systick.h>
 #include <libopencm3/cm3/nvic.h>
+#include <libopencm3/stm32/iwdg.h>
+#include <libopencm3/cm3/scb.h>
 
 #include "led.h"
 #include "cdcacm.h"
@@ -51,6 +53,10 @@ init()
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPCEN);
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPDEN);
 
+	// Configure watchdog. Period: 50ms
+	iwdg_set_period_ms(50);
+	iwdg_start();
+
 	usb_init();
 	i2c_init();
 	led_init();
@@ -65,6 +71,16 @@ init()
 	clock_init();
 	// Don't configure outputs, to prevent a USB host turning outputs on
 	// even after battery health check has been failed
+}
+
+void
+watchdog_isr(void)
+{
+
+	// Watchdog has not been reset; reset the board. This will result in all
+	// outputs being reset. Given how this should never happen, there is no
+	// point attempting to report it to software or user.
+	scb_reset_system();
 }
 
 void
@@ -218,6 +234,9 @@ main()
 
 		if (re_enter_bootloader)
 			jump_to_bootloader();
+
+		// Reset watchdog after successfully Doing Things
+		iwdg_reset();
 	}
 }
 
