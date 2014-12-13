@@ -126,7 +126,11 @@ check_batt_undervolt()
 
 		while (1) {
 			led_toggle_flat();
-			delay(2000);
+
+			for (unsigned int i = 0; i < 50; i++) {
+				delay(20);
+				iwdg_reset();
+			}
 		}
 	}
 	return;
@@ -161,11 +165,15 @@ check_batt_current_limit()
 			for (unsigned int i = 0; i < 2000; i++) {
 				piezo_toggle();
 				delay(1);
+				iwdg_reset();
 			}
 
 			check_batt_undervolt();
 
-			delay(2000);
+			for (unsigned int i = 0; i < 50; i++) {
+				delay(20);
+				iwdg_reset();
+			}
 		}
 	}
 }
