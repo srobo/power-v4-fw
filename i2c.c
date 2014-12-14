@@ -15,8 +15,7 @@
 enum {
 	I2C_IDLE,
 	I2C_WRITE_START, I2C_WRITE_ADDR, I2C_WRITE_DATA, I2C_WRITE_STOP,
-	I2C_READ_START, I2C_READ_ADDR, I2C_READ_DATA1, I2C_READ_DATA2,
-	I2C_READ_STOP
+	I2C_READ_START, I2C_READ_ADDR, I2C_READ_DATA, I2C_READ_STOP
 } i2c_state = I2C_IDLE;
 
 // Data for performing a transaction with the INA219.
@@ -142,42 +141,49 @@ void i2c_fsm(void)
 			// Set acknowledge bit, to acknowledge the first
 			// byte that turns up on the wire.
 			i2c_enable_ack(i2c);
+			// Set a magical flag that makes the ack bit apply to
+			// the /next/ byte after this. See below.
+			i2c_nack_next(i2c);
 			i2c_state = I2C_READ_ADDR;
 		}
 		break;
 	case I2C_READ_ADDR:
 		// An address has been written; did we get an ack?
 		if (I2C_SR1(i2c) & I2C_SR1_ADDR) {
-			// Clear by reading SR2
+			// Clear address bit by reading SR2
 			u32 = I2C_SR2(i2c);
-			// We're now to await first byte being sent by the INA.
-			i2c_state = I2C_READ_DATA1;
-		}
-		check_ack_fail();
-		check_berr();
-		break;
-	case I2C_READ_DATA1:
-		// We're awaiting a byte turning up.
-		if (I2C_SR1(i2c) & I2C_SR1_RxNE) {
-			// Excellent, we have a byte.
-			ina_result = i2c_get_data(i2c);
-			// We now need to clear the ack bit and send a stop
-			// condition, so that after the next byte arriving,
-			// it's promptly nack'd and stopped.
+			// We're now to await bytes being sent by the INA.
+			i2c_state = I2C_READ_DATA;
+			// Disable ack -- due to the POS bit being set (in the
+			// call to i2c_nack_next above), the next byte to be
+			// read will be ack'd, and the next nack'd, allowing 2
+			// bytes to be read. I would describe this special dance
+			// as being "an off by one in hardware".
 			i2c_disable_ack(i2c);
-			i2c_send_stop(i2c);
-			i2c_state = I2C_READ_DATA2;
+
 		}
 		check_ack_fail();
 		check_berr();
 		break;
-	case I2C_READ_DATA2:
-		if (I2C_SR1(i2c) & I2C_SR1_RxNE) {
-			// Excellent, second byte
+	case I2C_READ_DATA:
+		// Await BTF flag being set. This means that a) there is a byte
+		// read, currently stored in the data register, b) another byte
+		// has been read and is stuck in the shift register, and c) we
+		// are currently stretching the clock. Due to the ack/nack dance
+		// above, at this point the two bytes received have been ack'd
+		// and nack'd respectively.
+		if (I2C_SR1(i2c) & I2C_SR1_BTF) {
+			// Put a stop bit on the bus; no more data.
+			i2c_send_stop(i2c);
+			// Now read data from the data register. Once for the
+			// first byte, then a second is loaded into DR after
+			// the read.
+			ina_result = i2c_get_data(i2c);
 			ina_result <<= 8;
 			ina_result |= i2c_get_data(i2c);
-			// Stop will be sent automatically; don't go to idle
-			// until the bus is free though.
+
+			// Enter state waiting for the stop bit to have appeared
+			// on the bus
 			i2c_state = I2C_READ_STOP;
 		}
 		check_ack_fail();
@@ -186,6 +192,10 @@ void i2c_fsm(void)
 	case I2C_READ_STOP:
 		if (I2C_SR2(i2c) & I2C_SR2_BUSY)
 			break;
+
+		// Reset POS bit after the reading dance above.
+		i2c_nack_current(i2c);
+
 		// Set output data fields
 		*output_ptr = ina_result;
 		*output_done_ptr = I2C_STAT_DONE;
