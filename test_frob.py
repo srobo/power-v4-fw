@@ -8,7 +8,7 @@ import usb # pyusb
 parser = argparse.ArgumentParser()
 parser.add_argument("reqtype", help="read or write")
 parser.add_argument("reqname", help="name of request to make")
-parser.add_argument("argument", help="For writes, an output argument", nargs='?', default=-1, type=int)
+parser.add_argument("argument", help="For writes, an output argument", nargs='+', default=-1, type=int)
 args = parser.parse_args()
 
 write_ids = {
