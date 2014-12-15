@@ -20,6 +20,7 @@ write_ids = {
         'output5' : 5,
         'runled' : 6,
         'errorled' : 7,
+        'piezo' : 8,
         }
 
 read_ids = {
@@ -41,7 +42,7 @@ if args.reqtype == "read":
 elif args.reqtype == "write":
     req_map = write_ids
     is_read = False
-    if len(sys.argv) != 4:
+    if len(sys.argv) < 4:
         print >>sys.stderr, "You need to pass an argument to write"
         sys.exit(1)
 else:
@@ -75,5 +76,9 @@ else:
         p.set_output_rail(req_id, b)
     elif (req_id == 6):
         p.set_run_led(b)
-    else:
+    elif (req_id == 7):
         p.set_error_led(b)
+    elif (req_id == 8):
+        p.send_pizeo(int(sys.argv[3]), int(sys.argv[4]))
+    else:
+            raise ""

@@ -10,6 +10,7 @@ class Power:
 	CMD_WRITE_output5 = 5
 	CMD_WRITE_runled = 6
 	CMD_WRITE_errorled = 7
+	CMD_WRITE_piezo = 8
 	CMD_READ_output0 = 0
 	CMD_READ_output1 = 1
 	CMD_READ_output2 = 2
@@ -53,6 +54,10 @@ class Power:
 			val = False
 
 		self.handle.controlWrite(0, 64, val, Power.CMD_WRITE_errorled, 0)
+
+    def send_piezo(self, freq, duration):
+        data = struct.pack("HH", freq, duration)
+		self.handle.controlWrite(0, 64, 0, Power.CMD_WRITE_piezo, data)
 
 	def read_batt_status(self):
 		""" Measured in mA and mV"""
