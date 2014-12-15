@@ -81,7 +81,7 @@ static void configure_piezo_timer(piezo_sample_t *ps) {
 }
 
 void
-tim3_isr()
+tim4_isr()
 {
 	piezo_toggle();
 }
