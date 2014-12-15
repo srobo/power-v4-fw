@@ -237,6 +237,7 @@ main()
 		if (clock_tick()) {
 			check_batt_current_limit();
 			check_batt_undervolt();
+			piezo_tick();
 			on_time++;
 		}
 

@@ -23,6 +23,9 @@ static piezo_sample_t sample_buffer[PIEZO_BUFFER_LEN];
 static unsigned int buffer_free_pos = 0;
 static unsigned int buffer_cur_pos = 0;
 
+static unsigned int elapsed_piezo_time = 0;
+static unsigned int piezo_duration = 0;
+
 void piezo_init(void) {
 	gpio_clear(PIEZO_PORT, PIEZO_PIN);
 	gpio_set_mode(PIEZO_PORT, GPIO_MODE_OUTPUT_2_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, PIEZO_PIN);
@@ -137,4 +140,30 @@ bool piezo_recv(uint32_t size, uint8_t *data) {
 	}
 
 	return false;
+}
+
+void piezo_tick(void) {
+	/* Update piezo -- this function is called at 1Khz. Only change what
+	 * the piezo is doing if the current sample has completed it's duration
+	 * or there is no current sample, both signified by the inverse of the
+	 * next condition */
+	if (elapsed_piezo_time != piezo_duration) {
+		/* Currently sounding something. Increase tick and carry on. */
+		elapsed_piezo_time++;
+		return;
+	}
+
+	/* If there are no more samples, simply stop */
+	if (buffer_free_pos == buffer_cur_pos) {
+		nvic_disable_irq(NVIC_TIM4_IRQ);
+		elapsed_piezo_time = 0;
+		piezo_duration = 0;
+		return;
+	}
+
+	/*  Otherwise, there must be one more sample to read. */
+	configure_piezo_timer(&sample_buffer[buffer_cur_pos]);
+	piezo_duration = sample_buffer[buffer_cur_pos].duration;
+	buffer_cur_pos++;
+	buffer_cur_pos %= PIEZO_BUFFER_LEN;
 }
