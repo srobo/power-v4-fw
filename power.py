@@ -55,8 +55,8 @@ class Power:
 
 		self.handle.controlWrite(0, 64, val, Power.CMD_WRITE_errorled, 0)
 
-    def send_piezo(self, freq, duration):
-        data = struct.pack("HH", freq, duration)
+	def send_piezo(self, freq, duration):
+		data = struct.pack("HH", freq, duration)
 		self.handle.controlWrite(0, 64, 0, Power.CMD_WRITE_piezo, data)
 
 	def read_batt_status(self):
