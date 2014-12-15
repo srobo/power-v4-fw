@@ -8,6 +8,7 @@
 #include "led.h"
 #include "battery.h"
 #include "button.h"
+#include "piezo.h"
 #include "dfu-bootloader/usbdfu.h"
 
 #define delay(x) do { for (int i = 0; i < x * 1000; i++) \
@@ -217,6 +218,9 @@ handle_write_req(struct usb_setup_data *req)
 		write_led(LED_RUN, req->wValue); break;
 	case POWERBOARD_WRITE_ERRORLED:
 		write_led(LED_ERROR, req->wValue); break;
+	case POWERBOARD_WRITE_PIEZO:
+		if (!piezo_recv(req->wLength, usb_data_buffer))
+			break;
 	default:
 		return USBD_REQ_NOTSUPP; // Will result in a USB stall
 	}
