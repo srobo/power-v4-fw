@@ -32,13 +32,13 @@ void piezo_init(void) {
 
 	/* Enable TIM4 */
 	rcc_periph_clock_enable(RCC_TIM4);
-        timer_reset(TIM4);
-        timer_set_prescaler(TIM4, 72); // 72Mhz -> 1Mhz
-        timer_set_period(TIM4, 1); // 1Mhz, really configured elsewhere.
-        nvic_set_priority(NVIC_TIM4_IRQ, 2); // Less important
-        timer_enable_update_event(TIM4);
-        timer_enable_irq(TIM4, TIM_DIER_UIE);
-        timer_enable_counter(TIM4);
+	timer_reset(TIM4);
+	timer_set_prescaler(TIM4, 72); // 72Mhz -> 1Mhz
+	timer_set_period(TIM4, 1); // 1Mhz, really configured elsewhere.
+	nvic_set_priority(NVIC_TIM4_IRQ, 2); // Less important
+	timer_enable_update_event(TIM4);
+	timer_enable_irq(TIM4, TIM_DIER_UIE);
+	timer_enable_counter(TIM4);
 }
 
 void piezo_toggle(void) {
