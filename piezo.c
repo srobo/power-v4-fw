@@ -2,11 +2,16 @@
 #include <string.h>
 #include "piezo.h"
 #include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/rcc.h>
+#include <libopencm3/stm32/timer.h>
+#include <libopencm3/cm3/nvic.h>
 
 #define PIEZO_PORT GPIOB
 #define PIEZO_PIN GPIO0
 
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+
+/* Inspired by Rich's piezo code from the v3 power board */
 
 typedef struct {
 	uint16_t freq;
@@ -21,6 +26,16 @@ static unsigned int buffer_cur_pos = 0;
 void piezo_init(void) {
 	gpio_clear(PIEZO_PORT, PIEZO_PIN);
 	gpio_set_mode(PIEZO_PORT, GPIO_MODE_OUTPUT_2_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, PIEZO_PIN);
+
+	/* Enable TIM4 */
+	rcc_periph_clock_enable(RCC_TIM4);
+        timer_reset(TIM4);
+        timer_set_prescaler(TIM4, 72); // 72Mhz -> 1Mhz
+        timer_set_period(TIM4, 1); // 1Mhz, really configured elsewhere.
+        nvic_set_priority(NVIC_TIM4_IRQ, 2); // Less important
+        timer_enable_update_event(TIM4);
+        timer_enable_irq(TIM4, TIM_DIER_UIE);
+        timer_enable_counter(TIM4);
 }
 
 void piezo_toggle(void) {
@@ -37,6 +52,35 @@ static unsigned int free_samples() {
 		unsigned int tmp = buffer_free_pos - buffer_cur_pos;
 		return PIEZO_BUFFER_LEN - tmp;
 	}
+}
+
+static bool more_samples_available() {
+	if (buffer_free_pos != buffer_cur_pos)
+		return true;
+}
+
+static void configure_piezo_timer(piezo_sample_t *ps) {
+	if (ps->freq == 0) {
+		/* Zero freq -> be silent. Simply don't toggle the piezo */
+		nvic_disable_irq(NVIC_TIM4_IRQ);
+	} else {
+		/* Calculate delay, in Mhz. To avoid massively thrashing intrs
+		 * as a direct result of student written code, limit frequency
+		 * to 10Khz. */
+		unsigned int freq = MIN(10000, ps->freq);
+		unsigned int delay = 1000000 / freq;
+		/* Toggle at twice that speed. */
+		delay *= 2;
+
+		timer_set_period(TIM4, delay);
+		nvic_enable_irq(NVIC_TIM4_IRQ);
+	}
+}
+
+void
+tim3_isr()
+{
+	piezo_toggle();
 }
 
 bool piezo_recv(uint32_t size, uint8_t *data) {
