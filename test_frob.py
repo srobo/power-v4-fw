@@ -79,6 +79,6 @@ else:
     elif (req_id == 7):
         p.set_error_led(b)
     elif (req_id == 8):
-        p.send_pizeo(int(sys.argv[3]), int(sys.argv[4]))
+        p.send_piezo(int(sys.argv[3]), int(sys.argv[4]))
     else:
             raise ""
