@@ -11,6 +11,32 @@ parser.add_argument("reqname", help="name of request to make")
 parser.add_argument("argument", help="For writes, an output argument", nargs='+', default=-1, type=int)
 args = parser.parse_args()
 
+note_c = 261
+note_d = 294
+note_e = 329
+note_f = 349
+note_g = 392
+note_a = 440
+note_b = 493
+note_uc = 523
+tune = [
+        [ note_c, 500 ],
+        [ note_d, 500 ],
+        [ note_e, 500 ],
+        [ note_f, 500 ],
+        [ note_g, 500 ],
+        [ note_a, 500 ],
+        [ note_b, 500 ],
+        [ note_uc, 500 ],
+        [ note_b, 500 ],
+        [ note_a, 500 ],
+        [ note_g, 500 ],
+        [ note_f, 500 ],
+        [ note_e, 500 ],
+        [ note_d, 500 ],
+        [ note_c, 500 ],
+        ]
+
 write_ids = {
         'output0' : 0,
         'output1' : 1,
@@ -79,6 +105,9 @@ else:
     elif (req_id == 7):
         p.set_error_led(b)
     elif (req_id == 8):
-        p.send_piezo(int(sys.argv[3]), int(sys.argv[4]))
+        #p.send_piezo(int(sys.argv[3]), int(sys.argv[4]))
+        for note in tune:
+            print note
+            p.send_piezo(note[0], note[1])
     else:
             raise ""
