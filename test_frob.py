@@ -20,21 +20,21 @@ note_a = 440
 note_b = 493
 note_uc = 523
 tune = [
-        [ note_c, 500 ],
-        [ note_d, 500 ],
-        [ note_e, 500 ],
-        [ note_f, 500 ],
-        [ note_g, 500 ],
-        [ note_a, 500 ],
-        [ note_b, 500 ],
-        [ note_uc, 500 ],
-        [ note_b, 500 ],
-        [ note_a, 500 ],
-        [ note_g, 500 ],
-        [ note_f, 500 ],
-        [ note_e, 500 ],
-        [ note_d, 500 ],
-        [ note_c, 500 ],
+        [ note_c, 50 ],
+        [ note_d, 50 ],
+        [ note_e, 50 ],
+        [ note_f, 50 ],
+        [ note_g, 50 ],
+        [ note_a, 50 ],
+        [ note_b, 50 ],
+        [ note_uc, 50 ],
+        [ note_b, 50 ],
+        [ note_a, 50 ],
+        [ note_g, 50 ],
+        [ note_f, 50 ],
+        [ note_e, 50 ],
+        [ note_d, 50 ],
+        [ note_c, 50 ],
         ]
 
 write_ids = {
@@ -106,8 +106,14 @@ else:
         p.set_error_led(b)
     elif (req_id == 8):
         #p.send_piezo(int(sys.argv[3]), int(sys.argv[4]))
-        for note in tune:
-            print note
-            p.send_piezo(note[0], note[1])
+        import time
+        def play():
+            for note in tune:
+                print note
+                p.send_piezo(note[0], note[1])
+
+        for i in range(5):
+            play()
+            time.sleep(0.6)
     else:
             raise ""
