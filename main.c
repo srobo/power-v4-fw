@@ -103,6 +103,9 @@ shut_down_everything()
 
 	fan_off();
 
+	// Disable piezo
+	nvic_disable_irq(NVIC_TIM3_IRQ);
+
 	return;
 }
 
