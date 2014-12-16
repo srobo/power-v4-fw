@@ -30,15 +30,16 @@ void piezo_init(void) {
 	gpio_clear(PIEZO_PORT, PIEZO_PIN);
 	gpio_set_mode(PIEZO_PORT, GPIO_MODE_OUTPUT_2_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, PIEZO_PIN);
 
-	/* Enable TIM4 */
-	rcc_periph_clock_enable(RCC_TIM4);
-	timer_reset(TIM4);
-	timer_set_prescaler(TIM4, 72); // 72Mhz -> 1Mhz
-	timer_set_period(TIM4, 1); // 1Mhz, really configured elsewhere.
-	nvic_set_priority(NVIC_TIM4_IRQ, 2); // Less important
-	timer_enable_update_event(TIM4);
-	timer_enable_irq(TIM4, TIM_DIER_UIE);
-	timer_enable_counter(TIM4);
+	/* Enable TIM3 */
+	rcc_periph_clock_enable(RCC_TIM3);
+	timer_reset(TIM3);
+	timer_set_prescaler(TIM3, 72); // 72Mhz -> 1Mhz
+	timer_set_period(TIM3, 1); // 1Mhz, really configured elsewhere.
+	nvic_set_priority(NVIC_TIM3_IRQ, 2); // Less important
+	nvic_disable_irq(NVIC_TIM3_IRQ);
+	timer_enable_update_event(TIM3);
+	timer_enable_irq(TIM3, TIM_DIER_UIE);
+	timer_enable_counter(TIM3);
 }
 
 void piezo_toggle(void) {
@@ -65,7 +66,7 @@ static bool more_samples_available() {
 static void configure_piezo_timer(piezo_sample_t *ps) {
 	if (ps->freq == 0) {
 		/* Zero freq -> be silent. Simply don't toggle the piezo */
-		nvic_disable_irq(NVIC_TIM4_IRQ);
+		nvic_disable_irq(NVIC_TIM3_IRQ);
 	} else {
 		/* Calculate delay, in Mhz. To avoid massively thrashing intrs
 		 * as a direct result of student written code, limit frequency
@@ -75,15 +76,17 @@ static void configure_piezo_timer(piezo_sample_t *ps) {
 		/* Toggle at twice that speed. */
 		delay *= 2;
 
-		timer_set_period(TIM4, delay);
-		nvic_enable_irq(NVIC_TIM4_IRQ);
+		timer_set_period(TIM3, delay);
+		TIM_SR(TIM3) = 0;
+		nvic_enable_irq(NVIC_TIM3_IRQ);
 	}
 }
 
 void
-tim4_isr()
+tim3_isr()
 {
 	piezo_toggle();
+	TIM_SR(TIM3) = 0;
 }
 
 bool piezo_recv(uint32_t size, uint8_t *data) {
@@ -155,7 +158,7 @@ void piezo_tick(void) {
 
 	/* If there are no more samples, simply stop */
 	if (buffer_free_pos == buffer_cur_pos) {
-		nvic_disable_irq(NVIC_TIM4_IRQ);
+		nvic_disable_irq(NVIC_TIM3_IRQ);
 		elapsed_piezo_time = 0;
 		piezo_duration = 0;
 		return;
