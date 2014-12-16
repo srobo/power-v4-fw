@@ -140,6 +140,7 @@ bool piezo_recv(uint32_t size, uint8_t *data) {
 		unsigned int bytes = incoming_samples * 4;
 		memcpy(&sample_buffer[buffer_free_pos], data, bytes);
 		buffer_free_pos += incoming_samples;
+		buffer_free_pos %= PIEZO_BUFFER_LEN;
 	}
 
 	return false;
