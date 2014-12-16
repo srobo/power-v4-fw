@@ -68,7 +68,6 @@ init()
 	usart_init();
 	pswitch_init();
 	analogue_init();
-	clock_init();
 	// Don't configure outputs, to prevent a USB host turning outputs on
 	// even after battery health check has been failed
 }

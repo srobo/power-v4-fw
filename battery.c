@@ -10,6 +10,7 @@
 
 #include "led.h"
 #include "i2c.h"
+#include "clock.h"
 
 #define INA219_ADDR_BATT 0x40
 #define INA219_ADDR_SMPS 0x41
@@ -80,6 +81,9 @@ volatile enum i2c_stat read_flag;
 void tim2_isr(void)
 {
 	batt_do_read = true;
+
+	clock_isr(); // Piggy-back the wall-clock time on this ticking
+
 	TIM_SR(TIM2) = 0; // Inexplicably does not reset
 	return;
 }
