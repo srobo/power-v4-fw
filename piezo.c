@@ -167,6 +167,7 @@ void piezo_tick(void) {
 	/*  Otherwise, there must be one more sample to read. */
 	configure_piezo_timer(&sample_buffer[buffer_cur_pos]);
 	piezo_duration = sample_buffer[buffer_cur_pos].duration;
+	elapsed_piezo_time = 0;
 	buffer_cur_pos++;
 	buffer_cur_pos %= PIEZO_BUFFER_LEN;
 }
