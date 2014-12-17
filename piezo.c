@@ -74,7 +74,7 @@ static void configure_piezo_timer(piezo_sample_t *ps) {
 		unsigned int freq = MIN(10000, ps->freq);
 		unsigned int delay = 1000000 / freq;
 		/* Toggle at twice that speed. */
-		delay *= 2;
+		delay /= 2;
 
 		timer_set_period(TIM3, delay);
 		TIM_SR(TIM3) = 0;
