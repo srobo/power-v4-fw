@@ -58,11 +58,6 @@ static unsigned int free_samples() {
 	}
 }
 
-static bool more_samples_available() {
-	if (buffer_free_pos != buffer_cur_pos)
-		return true;
-}
-
 static void configure_piezo_timer(piezo_sample_t *ps) {
 	if (ps->freq == 0) {
 		/* Zero freq -> be silent. Simply don't toggle the piezo */
