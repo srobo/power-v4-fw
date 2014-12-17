@@ -151,10 +151,13 @@ void piezo_tick(void) {
 	 * the piezo is doing if the current sample has completed it's duration
 	 * or there is no current sample, both signified by the inverse of the
 	 * next condition */
-	if (elapsed_piezo_time != piezo_duration) {
+	if (elapsed_piezo_time < piezo_duration) {
 		/* Currently sounding something. Increase tick and carry on. */
 		elapsed_piezo_time++;
 		return;
+	} else if (elapsed_piezo_time <= piezo_duration + 5) {
+		/* 5ms silence */
+		nvic_disable_irq(NVIC_TIM3_IRQ);
 	}
 
 	/* If there are no more samples, simply stop */
