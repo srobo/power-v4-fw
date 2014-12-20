@@ -71,8 +71,9 @@ static void configure_piezo_timer(piezo_sample_t *ps) {
 		/* Toggle at twice that speed. */
 		delay /= 2;
 
-		timer_set_period(TIM3, delay);
 		TIM_SR(TIM3) = 0;
+		timer_set_period(TIM3, delay);
+		timer_set_counter(TIM3, 0);
 		nvic_enable_irq(NVIC_TIM3_IRQ);
 	}
 }
