@@ -315,7 +315,13 @@ set_config_cb(usbd_device *usbd_dev, uint16_t wValue)
 		  USB_REQ_TYPE_CLASS | USB_REQ_TYPE_INTERFACE,
 		  USB_REQ_TYPE_TYPE | USB_REQ_TYPE_RECIPIENT,
 		  iface_control);
+
+  // Indicate (on boot) that we've been enumerated -- the LED will have been
+  // RED/GREEN, it will now be solid green.
+  led_clear(LED_ERROR);
 }
+
+extern void usb_reset_callback(void);
 
 void
 usb_init()
@@ -328,6 +334,7 @@ usb_init()
 		 usb_strings, 3, usb_data_buffer, sizeof(usb_data_buffer));
 
   usbd_register_set_config_callback(usbd_dev, set_config_cb);
+  usbd_register_reset_callback(usbd_dev, usb_reset_callback);
 
   gpio_set(GPIOA, GPIO8);
 }

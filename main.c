@@ -202,6 +202,27 @@ timer_check()
 }
 
 void
+usb_reset_callback()
+{
+	unsigned int i;
+	// Turn off a subset of things that affect the rest of the kit. We don't
+	// want to turn the odroid off.
+
+	for (i = 0; i < 6; i++)
+		output_off(i);
+
+	for (i = 0; i < 6; i++)
+		output_stat_off(0);
+
+	// Disable piezo
+	nvic_disable_irq(NVIC_TIM3_IRQ);
+
+	// Signal we're in a reset state.
+	led_set(LED_RUN);
+	led_set(LED_ERROR);
+}
+
+void
 jump_to_bootloader()
 {
 
@@ -227,6 +248,9 @@ main()
 	on_time = 0; // Just in case
 
 	init();
+
+	led_set(LED_RUN);
+	led_set(LED_ERROR);
 
 	while (1) {
 		// Do things
