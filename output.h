@@ -4,6 +4,8 @@
 
 void output_init(void);
 
+void output_poll(void);
+
 void output_on(uint8_t n);
 
 void output_off(uint8_t n);

@@ -4,6 +4,14 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/cm3/nvic.h>
 
+#define OUTPUT_CURRENT_IIR_DECAY 32
+#define OUTPUT_CURRENT_IIR_LOG 5
+#define HIGH_OUTPUT_CURLIMIT 20000 * OUTPUT_CURRENT_IIR_DECAY /* 20A */
+#define LOW_OUTPUT_CURLIMIT 10000 * OUTPUT_CURRENT_IIR_DECAY /* 10A */
+
+uint32_t current_limit_iirs[6];
+static bool output_status[6];
+
 uint32_t OUTPUT_PORT[6] = {GPIOB,  GPIOB,  GPIOC, GPIOC, GPIOC, GPIOC};
 uint16_t OUTPUT_PIN[6]  = {GPIO10, GPIO11, GPIO6, GPIO7, GPIO8, GPIO9};
 
@@ -47,6 +55,11 @@ void output_init(void) {
 
 void output_on(uint8_t n) {
 	if (n > 6) return;
+
+	// Do not turn on if current limit tripped
+	if (output_status[n])
+		return;
+
 	gpio_set(OUTPUT_PORT[n], OUTPUT_PIN[n]);
 }
 
@@ -57,12 +70,16 @@ void output_off(uint8_t n) {
 
 void output_stat_on(uint8_t n) {
 	if (n > 6) return;
+	// Set signal led; also set current limit on
 	gpio_set(OUTPUT_STAT_PORT[n], OUTPUT_STAT_PIN[n]);
+	output_status[n] = true;
 }
 
 void output_stat_off(uint8_t n) {
 	if (n > 6) return;
+	// Clear LED and current limit status
 	gpio_clear(OUTPUT_STAT_PORT[n], OUTPUT_STAT_PIN[n]);
+	output_status[n] = false;
 }
 
 // To be called from ADC intr
@@ -145,4 +162,34 @@ uint32_t current_sense_read(int output)
 	tmp_result += result;
 	result = tmp_result;
 	return result;
+}
+
+void
+do_output_curlimit(unsigned int idx, unsigned int iir_limit_val)
+{
+	uint32_t sample = current_sense_read(idx);
+        uint32_t decay = current_limit_iirs[idx] >> OUTPUT_CURRENT_IIR_LOG;
+        current_limit_iirs[idx] -= decay;
+        current_limit_iirs[idx] += sample;;
+
+	// Check whether the IIR is over the specified current limit.
+        if (current_limit_iirs[idx] > iir_limit_val) {
+		// Turn off this output (permanently) and signal to the user.
+		output_off(idx);
+		output_stat_on(idx);
+	}
+}
+
+void
+output_poll(void)
+{
+	// To be called at 1Khz; mantains IIRs on each power board output,
+	// enforcing a software current limit.
+	do_output_curlimit(0, HIGH_OUTPUT_CURLIMIT);
+	do_output_curlimit(1, HIGH_OUTPUT_CURLIMIT);
+	do_output_curlimit(2, LOW_OUTPUT_CURLIMIT);
+	do_output_curlimit(3, LOW_OUTPUT_CURLIMIT);
+	do_output_curlimit(4, LOW_OUTPUT_CURLIMIT);
+	do_output_curlimit(5, LOW_OUTPUT_CURLIMIT);
+	return;
 }
