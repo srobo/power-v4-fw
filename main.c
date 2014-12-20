@@ -93,7 +93,7 @@ shut_down_everything()
 		output_off(i);
 
 	for (i = 0; i < 6; i++)
-		output_stat_off(0);
+		output_stat_off(i);
 
 	led_clear(LED_RUN);
 	led_clear(LED_ERROR);
@@ -212,7 +212,7 @@ usb_reset_callback()
 		output_off(i);
 
 	for (i = 0; i < 6; i++)
-		output_stat_off(0);
+		output_stat_off(i);
 
 	// Disable piezo
 	nvic_disable_irq(NVIC_TIM3_IRQ);
