@@ -54,8 +54,9 @@ init()
 	rcc_peripheral_enable_clock(&RCC_APB2ENR, RCC_APB2ENR_IOPDEN);
 
 	// Configure watchdog. Period: 50ms
-	iwdg_set_period_ms(50);
-	iwdg_start();
+	//Disabled for sr2015: too flaky
+	//iwdg_set_period_ms(50);
+	//iwdg_start();
 
 	usb_init();
 	i2c_init();
@@ -131,7 +132,8 @@ check_batt_undervolt()
 
 			for (unsigned int i = 0; i < 50; i++) {
 				delay(20);
-				iwdg_reset();
+				//disable for sr2015: too flaky
+				//iwdg_reset();
 			}
 		}
 	}
@@ -167,13 +169,15 @@ check_batt_current_limit()
 			for (unsigned int i = 0; i < 2000; i++) {
 				piezo_toggle();
 				delay(1);
-				iwdg_reset();
+				//disabled for sr2015, too flaky
+				//iwdg_reset();
 			}
 
 			check_batt_undervolt();
 
 			for (unsigned int i = 0; i < 50; i++) {
 				delay(20);
+				//disabled for sr2015, too flaky
 				iwdg_reset();
 			}
 		}
@@ -272,7 +276,8 @@ main()
 			jump_to_bootloader();
 
 		// Reset watchdog after successfully Doing Things
-		iwdg_reset();
+		//Too flaky for sr2015
+		//iwdg_reset();
 	}
 }
 
