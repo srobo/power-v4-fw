@@ -258,7 +258,6 @@ main()
 
 	while (1) {
 		// Do things
-		usb_poll();
 		current_sense_poll();
 		i2c_poll();
 		battery_poll();

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <libopencm3/usb/usbd.h>
 #include <libopencm3/stm32/gpio.h>
+#include <libopencm3/stm32/f1/nvic.h>
 #include <libopencm3/usb/dfu.h>
 
 #include "usb.h"
@@ -337,6 +338,13 @@ usb_init()
   usbd_register_reset_callback(usbd_dev, usb_reset_callback);
 
   gpio_set(GPIOA, GPIO8);
+
+  // Enable low priority general purpose USB intr
+  nvic_enable_irq(NVIC_USB_LP_CAN_RX0_IRQ);
+  // Set USB to be low priority: it will still execute in interrupt context
+  // and block the main thread, however all the other interrupts (clock,
+  // analogue, etc) will interrupt on top of this.
+  nvic_set_priority(NVIC_USB_LP_CAN_RX0_IRQ, 16);
 }
 
 void
@@ -345,6 +353,9 @@ usb_deinit()
 
   // Gate USB; this will cause a reset for us and the  host.
   gpio_clear(GPIOA, GPIO8);
+
+  // Disable intr
+  nvic_disable_irq(NVIC_USB_LP_CAN_RX0_IRQ);
 
   // Do nothing for a few ms, then poll a few times to ensure that the driver
   // has reset itself
@@ -359,7 +370,7 @@ usb_deinit()
 }
 
 void
-usb_poll()
+usb_lp_can_rx0_isr()
 {
 
 	usbd_poll(usbd_dev);
