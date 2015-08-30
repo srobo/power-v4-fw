@@ -40,7 +40,7 @@ test: pbv4_test.bin
 include depend
 
 bootloader:
-	FORCE_BOOTLOADER_OBJ=`pwd`/button.o $(MAKE) -C dfu-bootloader
+	FORCE_BOOTLOADER_OBJ="`pwd`/button.o `pwd`/smps.o" $(MAKE) -C dfu-bootloader
 
 pbv4.elf: $(O_FILES) $(LDSCRIPT)
 	$(LD) -o $@ $(O_FILES) $(LDFLAGS) -lopencm3_stm32f1

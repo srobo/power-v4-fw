@@ -28,3 +28,12 @@ void smps_boost_on(void) {
 void smps_boost_off(void) {
 	gpio_set(TRIM_PORT, TRIM_PIN);
 }
+
+void smps_on_boot(void) __attribute__((section(".bootloader")));
+
+void smps_on_boot(void) {
+	// Turn SMPS on in the context of the bootloader
+	gpio_clear(EN_PORT, EN_PIN);
+	gpio_set_mode(EN_PORT, GPIO_MODE_OUTPUT_2_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, EN_PIN);
+	gpio_set(EN_PORT, EN_PIN);
+}

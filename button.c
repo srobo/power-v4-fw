@@ -1,6 +1,7 @@
 #include <stdbool.h>
 
 #include "button.h"
+#include "smps.h"
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/stm32/rcc.h>
 
@@ -28,6 +29,14 @@ bool force_bootloader() __attribute__((section(".bootloader")));
 
 bool force_bootloader()
 {
+
+	// HACK TIME: When the bootloader runs, we need to turn the 5v rail smps on.
+	// This is because if we stick in the bootloader, the odroid needs to be
+	// brought up so that it can actually flash the power board. If we didn't,
+	// we'd be stuck in a state where the power board is on, nothing else is,
+	// thus nothing can cause the power board to make progress.
+	smps_on();
+
 	// Function to check whether we should force the bootloader.
 	// Specifically, do that if the start button is pressed on startup
 	rcc_periph_clock_enable(RCC_GPIOC);
