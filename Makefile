@@ -58,6 +58,7 @@ pbv4_test.elf: $(TEST_O_FILES)
 # segment of flash, by droping the first 8k of the flat image.
 pbv4_noboot.bin: pbv4.elf
 	tmpfile=`mktemp /tmp/sr-pbv4-XXXXXXXX`; $(OBJCOPY) -O binary $< $$tmpfile; dd if=$$tmpfile of=$@ bs=4k skip=2; rm $$tmpfile
+	dfu-bootloader/crctool -w $@
 
 depend: *.c
 	rm -f depend
