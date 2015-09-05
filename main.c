@@ -186,7 +186,7 @@ timer_check()
 
 	// After 1000ms of start time, check whether the battery is in a healthy
 	// condition.
-	if (on_time == 3000) {
+	if (on_time == 1000) {
 		uint32_t voltage = read_battery_voltage();
 
 		if (voltage > 10200) {
