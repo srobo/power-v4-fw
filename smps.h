@@ -3,6 +3,7 @@
 void smps_init(void);
 
 void smps_on(void);
+void smps_on_boot(void);
 
 void smps_off(void);
 
