@@ -171,3 +171,51 @@ void piezo_tick(void) {
 	buffer_cur_pos++;
 	buffer_cur_pos %= PIEZO_BUFFER_LEN;
 }
+
+// In hertz, C arpeggio,
+const uint16_t fw_tones[4] =
+{ 261, 196, 164, 130 };
+
+void piezo_init_beep(void) {
+	/* Make some initial beeps corresponding to the firmware version. This
+	 * is not intended to be a concrete way of detecting versions (USB has
+	 * that), instead it's to allow someone to know that a board they're
+	 * not working on (i.e., it's in a school) is at the correct version. */
+
+	/* Rather than just beeping out N times, where N is the fw version,
+	 * use different tones for each multiple of four. So we're essentially
+	 * counting in base 4. The piezo buffer len is currently 32; we need a
+	 * gap between each note so that gives us 16 entries. With 256 possible
+	 * revisions the longest series would be 3*4 in base 4. */
+	piezo_sample_t samp;
+	uint8_t tone_count[4];
+	unsigned int i, multiple;
+	// Device major revision number is '4', only care about fw ver
+	uint8_t dev_rev = SR_DEV_REV & 0xFF;
+
+	tone_count[0] = dev_rev & 0x3;
+	tone_count[1] = (dev_rev >> 2) & 0x3;
+	tone_count[2] = (dev_rev >> 4) & 0x3;
+	tone_count[3] = (dev_rev >> 6) & 0x3;
+
+	/* Play tones the specified number of times, most significant tone
+	 * first */
+	for (i = 0; i < 4; i++) {
+		uint8_t count = tone_count[3 - i];
+		uint16_t tone_freq = fw_tones[3 - i];
+
+		for (unsigned int j = 0; j < count; j++) {
+			// Pump in via piezo_recv to avoid too much coupling
+			samp.freq = tone_freq;
+			samp.duration = 150;
+			piezo_recv(sizeof(samp), (uint8_t*)&samp);
+			samp.freq = 0;
+			samp.duration = 15;
+			piezo_recv(sizeof(samp), (uint8_t*)&samp);
+		}
+	}
+
+	// Fini
+	return;
+}
+

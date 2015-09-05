@@ -12,3 +12,5 @@ void piezo_toggle(void);
 bool piezo_recv(uint32_t size, uint8_t *data);
 
 void piezo_tick(void);
+
+void piezo_init_beep(void);

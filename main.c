@@ -70,6 +70,9 @@ init()
 	analogue_init();
 	// Don't configure outputs, to prevent a USB host turning outputs on
 	// even after battery health check has been failed
+
+	// Play a tune indicating our fw revision
+	piezo_init_beep();
 }
 
 void
