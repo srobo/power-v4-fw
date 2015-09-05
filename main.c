@@ -103,6 +103,8 @@ shut_down_everything()
 
 	fan_off();
 
+	usb_deinit();
+
 	// Disable piezo
 	nvic_disable_irq(NVIC_TIM3_IRQ);
 
