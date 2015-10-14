@@ -1,4 +1,4 @@
-FW_VER=2
+FW_VER=3
 
 PREFIX = arm-none-eabi
 CC = $(PREFIX)-gcc
@@ -14,7 +14,7 @@ OOCD_BOARD = oocd/pbv4.cfg
 # Export these facts to bootloader
 SR_BOOTLOADER_VID=0x1BDA  # ECS VID
 SR_BOOTLOADER_PID=0x0010  # Power board PID
-SR_BOOTLOADER_REV=0x0402  # BCD version, board 4.2.
+SR_BOOTLOADER_REV=0x0403  # BCD version, board 4.3.
 SR_BOOTLOADER_FLASHSIZE=0x8000 # 32kb of onboard flash.
 export SR_BOOTLOADER_VID SR_BOOTLOADER_PID SR_BOOTLOADER_REV SR_BOOTLOADER_FLASHSIZE
 
