@@ -78,7 +78,7 @@ static const struct usb_config_descriptor usb_config = {
 };
 
 static const char *usb_strings[] = {
-        "Student Robotics",
+        "University of Southampton",
         "Power board v4",
         (const char *)SERIALNUM_BOOTLOADER_LOC,
 	"Student Robotics Power board v4", // Iface 1
