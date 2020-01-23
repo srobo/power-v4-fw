@@ -58,7 +58,6 @@ Designs
 -------
 
 You can access the schematics and source code of the hardware in the following places.
--   [Full
-    Schematics](https://www.studentrobotics.org/resources/kit/power-schematic.pdf)
+-   [Full Schematics](https://www.studentrobotics.org/resources/kit/power-schematic.pdf)
 -   [Student Facing Docs](https://studentrobotics.org/docs/kit/power_board)
 -   [Hardware designs](https://github.com/srobo/power-v4-hw)
