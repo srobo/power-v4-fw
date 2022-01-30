@@ -17,7 +17,7 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Linker script for STM32F100x6, 32K flash, 4K RAM. */
+/* Based on generic linker script for STM32 targets using libopencm3. */
 
 /* Define memory regions. */
 MEMORY
@@ -115,6 +115,12 @@ SECTIONS
 	/DISCARD/ : { *(.eh_frame) }
 
 	. = ALIGN(4);
+
+	.text : {
+		FILL(0);
+		. = ORIGIN(rom) + LENGTH(rom) - 1;
+		BYTE(0x00)
+	} >rom
 	end = .;
 }
 
