@@ -39,9 +39,9 @@ ENTRY(bootloader_entry)
 SECTIONS
 {
 	.text : {
-		*usb_dfu_blob*.o*(.text*)
+		KEEP(*usb_dfu_blob*.o*(.text*))
 		FILL(0)
-	. = 0x2000;
+		. =  ORIGIN(rom) + 0x2000;
 	} >rom
 	.text : {
 		main.o(.lolstartup) /* Startup record for bootloader */
