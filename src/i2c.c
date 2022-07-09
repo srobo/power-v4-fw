@@ -1,10 +1,9 @@
 #include "i2c.h"
-#include "led.h"
 
 // A timed out I2C device will NACK after receiving a byte
 #define I2C_EXIT_ON_FAILED(x) if(i2c_timed_out) { return x;}
 #define I2C_FAIL_ON_NACK(x) if(I2C_SR1(I2C1) & I2C_SR1_AF) { \
-    i2c_timed_out = true; set_led(LED_STATUS_RED); \
+    i2c_timed_out = true; \
     if (I2C_SR2(I2C1) & I2C_SR2_BUSY) {i2c_send_stop(I2C1);} return x;}
 
 
@@ -235,6 +234,4 @@ void reset_i2c_watchdog(void) {
     // Disable and re-enable I2C to clear status bits
     I2C_CR1(I2C1) &= ~I2C_CR1_PE;
     I2C_CR1(I2C1) |= I2C_CR1_PE;
-
-    clear_led(LED_STATUS_RED);
 }
