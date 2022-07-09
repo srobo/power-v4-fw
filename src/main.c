@@ -1,8 +1,12 @@
 #include <stdlib.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
+#include <libopencm3/cm3/systick.h>
 
 #include "cdcacm.h"
+#include "systick.h"
+#include "led.h"
+#include "i2c.h"
 
 #define REENTER_BOOTLOADER_RENDEZVOUS	0x08001FFC
 
@@ -14,9 +18,7 @@ int main(void)
     init();
 
     // enable status LED
-    gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_10_MHZ,
-              GPIO_CNF_OUTPUT_PUSHPULL, GPIO11);
-    gpio_clear(GPIOB, GPIO11);
+    set_led(LED_RUN);
 
     while (1) {
         usb_poll();
@@ -32,15 +34,25 @@ void init(void)
 
     rcc_periph_clock_enable(RCC_GPIOA);
     rcc_periph_clock_enable(RCC_GPIOB);
+    rcc_periph_clock_enable(RCC_GPIOC);
+    rcc_periph_clock_enable(RCC_GPIOD);
     rcc_periph_clock_enable(RCC_AFIO);
 
     AFIO_MAPR |= AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_ON;
 
     usb_init();
+    systick_init();
+    led_init();
+    i2c_init();
+    init_current_sense(BATTERY_SENSE_ADDR, I_CAL_VAL(0.0005));
+    init_current_sense(REG_SENSE_ADDR, I_CAL_VAL(0.010));
 }
 
 void jump_to_bootloader(void)
 {
+    // Disable systick
+    systick_counter_disable();
+
     // Actually wait for the usb peripheral to complete
     // it's acknowledgement to dfu_detach
     delay(20);

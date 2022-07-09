@@ -264,4 +264,4 @@ endif
 
 %.dfu:	%.bin
 	@printf "  DFU   $(*).bin\n"
-	$(Q)$(DFU_UTIL) -D $(*).bin
+	$(Q)$(DFU_UTIL) -d $(VID):$(PID) -D $(*).bin
