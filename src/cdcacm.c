@@ -22,6 +22,14 @@
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/usb/usbd.h>
 #include <libopencm3/usb/cdc.h>
+#include <libopencm3/usb/dfu.h>
+
+#define REENTER_BOOTLOADER_RENDEZVOUS	0x08001FFC
+#define delay(x) do { for (int i = 0; i < x * 1000; i++) \
+                          __asm__("nop"); \
+                    } while(0)
+
+bool re_enter_bootloader = false;
 
 static const struct usb_device_descriptor dev = {
 	.bLength = USB_DT_DEVICE_SIZE,
@@ -38,6 +46,15 @@ static const struct usb_device_descriptor dev = {
 	.iProduct = 2,
 	.iSerialNumber = 3,
 	.bNumConfigurations = 1,
+};
+
+const struct usb_dfu_descriptor sr_dfu_function = {
+        .bLength = sizeof(struct usb_dfu_descriptor),
+        .bDescriptorType = DFU_FUNCTIONAL,
+        .bmAttributes = USB_DFU_CAN_DOWNLOAD | USB_DFU_WILL_DETACH,
+        .wDetachTimeout = 255,
+        .wTransferSize = 128,
+        .bcdDFUVersion = 0x011A,
 };
 
 /*
@@ -136,23 +153,40 @@ static const struct usb_interface_descriptor data_iface[] = {{
 	.endpoint = data_endp,
 }};
 
+const struct usb_interface_descriptor dfu_iface[] = {{
+    .bLength = USB_DT_INTERFACE_SIZE,
+    .bDescriptorType = USB_DT_INTERFACE,
+    .bInterfaceNumber = 2,
+    .bAlternateSetting = 0,
+    .bNumEndpoints = 0,
+    .bInterfaceClass = USB_CLASS_DFU,
+    .bInterfaceSubClass = 0x01, // DFU
+    .bInterfaceProtocol = 0x01, // Protocol 1.0
+    .iInterface = 4,
+	.extra = &sr_dfu_function,
+	.extralen = sizeof(sr_dfu_function),
+}};
+
 static const struct usb_interface ifaces[] = {{
 	.num_altsetting = 1,
 	.altsetting = comm_iface,
 }, {
 	.num_altsetting = 1,
 	.altsetting = data_iface,
+}, {
+    .num_altsetting = 1,
+    .altsetting = dfu_iface,
 }};
 
 static const struct usb_config_descriptor config = {
 	.bLength = USB_DT_CONFIGURATION_SIZE,
 	.bDescriptorType = USB_DT_CONFIGURATION,
 	.wTotalLength = 0,
-	.bNumInterfaces = 2,
+	.bNumInterfaces = 3,
 	.bConfigurationValue = 1,
 	.iConfiguration = 0,
-	.bmAttributes = 0x80,
-	.bMaxPower = 0x32,
+    .bmAttributes = 0xC0,   // self powered
+    .bMaxPower = 50,        // 100mA from USB
 
 	.interface = ifaces,
 };
@@ -161,6 +195,7 @@ static const char *usb_strings[] = {
 	"Black Sphere Technologies",
 	"CDC-ACM Demo",
 	"DEMO",
+    "DEMO DFU",
 };
 
 /* Buffer to be used for control requests. */
@@ -199,6 +234,18 @@ static enum usbd_request_return_codes cdcacm_control_request(usbd_device *usbd_d
 			return USBD_REQ_NOTSUPP;
 
 		return USBD_REQ_HANDLED;
+	case DFU_GETSTATUS:
+        *len = 6;
+        (*buf)[0] = STATE_DFU_IDLE;
+        (*buf)[1] = 100; // ms
+        (*buf)[2] = 0;
+        (*buf)[3] = 0;
+        (*buf)[4] = DFU_STATUS_OK;
+        (*buf)[5] = 0;
+        return USBD_REQ_HANDLED;
+    case DFU_DETACH:
+        re_enter_bootloader = true;
+        return USBD_REQ_HANDLED;
 	}
 	return USBD_REQ_NOTSUPP;
 }
@@ -230,28 +277,61 @@ static void cdcacm_set_config(usbd_device *usbd_dev, uint16_t wValue)
 				cdcacm_control_request);
 }
 
+void jump_to_bootloader(usbd_device* usbd_dev);
+
 int main(void)
 {
 	usbd_device *usbd_dev;
 
-	rcc_clock_setup_pll(&rcc_hsi_configs[RCC_CLOCK_HSI_48MHZ]);
+	rcc_clock_setup_pll(&rcc_hse_configs[RCC_CLOCK_HSE8_72MHZ]);
 
 	rcc_periph_clock_enable(RCC_GPIOA);
+	rcc_periph_clock_enable(RCC_GPIOB);
 	rcc_periph_clock_enable(RCC_AFIO);
 
 	AFIO_MAPR |= AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_ON;
 
-	gpio_set_mode(GPIOA, GPIO_MODE_INPUT, 0, GPIO15);
+	gpio_set_mode(GPIOA, GPIO_MODE_INPUT, 0, GPIO8);
 
-	usbd_dev = usbd_init(&st_usbfs_v1_usb_driver, &dev, &config, usb_strings, 3, usbd_control_buffer, sizeof(usbd_control_buffer));
+	usbd_dev = usbd_init(&st_usbfs_v1_usb_driver, &dev, &config, usb_strings, 4, usbd_control_buffer, sizeof(usbd_control_buffer));
 	usbd_register_set_config_callback(usbd_dev, cdcacm_set_config);
 
-	gpio_set(GPIOA, GPIO15);
+	gpio_set(GPIOA, GPIO8);
 	gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_2_MHZ,
-		      GPIO_CNF_OUTPUT_PUSHPULL, GPIO15);
+		      GPIO_CNF_OUTPUT_PUSHPULL, GPIO8);
 
-	while (1)
-		usbd_poll(usbd_dev);
+	// enable status LED
+	gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_10_MHZ,
+			  GPIO_CNF_OUTPUT_PUSHPULL, GPIO8);
+	gpio_clear(GPIOB, GPIO8);
+
+
+    while (1) {
+        usbd_poll(usbd_dev);
+        if (re_enter_bootloader) {
+            jump_to_bootloader(usbd_dev);
+        }
+    }
+}
+
+void jump_to_bootloader(usbd_device* usbd_dev)
+{
+    // Actually wait for the usb peripheral to complete
+    // it's acknowledgement to dfu_detach
+    delay(20);
+    // Now reset USB
+    // Clear ext USB enable; this will cause a reset for us and the host.
+    gpio_clear(GPIOA, GPIO8);
+
+    // Wait a few ms, then poll a few times to ensure that the driver
+    // has reset itself
+    delay(20);
+    usbd_poll(usbd_dev);
+    usbd_poll(usbd_dev);
+    usbd_poll(usbd_dev);
+    usbd_poll(usbd_dev);
+	// Call back into bootloader
+    (*(void (**)())(REENTER_BOOTLOADER_RENDEZVOUS))();
 }
 
 // Configure application start address, put in section that'll be placed at
