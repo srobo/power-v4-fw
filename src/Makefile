@@ -22,7 +22,7 @@ FW_VER ?= 4.0
 # Name of C file with main function
 BINARY = main
 # Name of all other C files to be compiled (with .o extension)
-OBJS = cdcacm.o
+OBJS = cdcacm.o msg_handler.o
 
 LDSCRIPT = $(OPENCM3_DIR)/../utils/stm32-sbv4.ld
 
