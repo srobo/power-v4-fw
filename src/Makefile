@@ -18,11 +18,16 @@
 ## along with this library.  If not, see <http://www.gnu.org/licenses/>.
 ##
 
-BINARY = cdcacm
+# Name of C file with main function
+BINARY = main
+# Name of all other C files to be compiled (with .o extension)
+OBJS = cdcacm.o
+
+LDSCRIPT = $(OPENCM3_DIR)/../utils/stm32-sbv4.ld
 
 all: bin
 
-include rules.mk
+include ../utils/rules.mk
 
 elf: $(BINARY).elf
 bin: $(BINARY).bin
