@@ -7,6 +7,10 @@
 #include "systick.h"
 #include "led.h"
 #include "i2c.h"
+#include "button.h"
+#include "fan.h"
+#include "adc.h"
+#include "output.h"
 
 #define REENTER_BOOTLOADER_RENDEZVOUS	0x08001FFC
 
@@ -46,6 +50,10 @@ void init(void)
     i2c_init();
     init_current_sense(BATTERY_SENSE_ADDR, I_CAL_VAL(0.0005));
     init_current_sense(REG_SENSE_ADDR, I_CAL_VAL(0.010));
+    button_init();
+    fan_init();
+    adc_init();
+    outputs_init();
 }
 
 void jump_to_bootloader(void)

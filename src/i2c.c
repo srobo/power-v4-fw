@@ -219,6 +219,7 @@ INA219_meas_t measure_current_sense(uint8_t addr) {
 
     bool v_success = i2c_recv_bytes(addr, val, 2);
     res.voltage = (int16_t)(((uint16_t)val[0] << 8) | ((uint16_t)val[1] & 0xff));
+    res.voltage &= 0xfff8;  // mask status bits
     res.voltage >>= 1;  // rshift to get 1mV/bit
 
     // did i2c timeout during the transaction?
