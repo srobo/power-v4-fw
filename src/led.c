@@ -9,13 +9,13 @@ void led_init(void) {
     gpio_set_mode(GPIOC, GPIO_MODE_OUTPUT_10_MHZ,
                   GPIO_CNF_OUTPUT_PUSHPULL, 0x0C00);
     gpio_set_mode(GPIOD, GPIO_MODE_OUTPUT_10_MHZ,
-                  GPIO_CNF_OUTPUT_PUSHPULL, 1 << 2);
+                  GPIO_CNF_OUTPUT_PUSHPULL, LED_FLAT);
 
     // set LEDs to off state
-    gpio_clear(GPIOB, 0x0300);  // active high LEDs
-    gpio_clear(GPIOC, 0x0C00);  // active high LEDs
-    gpio_set(GPIOB, 0xf000);  // active low LEDs
-    gpio_set(GPIOD, 1 << 2);  // active low LEDs
+    gpio_set(GPIOB, LED_RUN|LED_ERROR);  // active low LEDs
+    gpio_set(GPIOD, LED_FLAT);  // active low LEDs
+    gpio_clear(GPIOC, LED_STATH0|LED_STATH1);  // active high LEDs
+    gpio_clear(GPIOB, 0xf000);  // active high LEDs
 }
 
 void set_led(uint32_t pin) {
