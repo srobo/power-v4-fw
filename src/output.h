@@ -13,6 +13,7 @@ typedef struct {
     uint16_t L3;
 } out_current_t;
 
+extern out_current_t output_current;
 
 void outputs_init(void);
 
