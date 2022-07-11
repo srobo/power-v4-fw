@@ -21,3 +21,4 @@ void setup_current_phase(uint8_t phase);
 void save_current_values(uint8_t phase, uint16_t current1, uint16_t current2);
 
 bool enable_output(output_t out, bool enable);
+bool output_enabled(output_t out);

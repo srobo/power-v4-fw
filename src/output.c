@@ -73,3 +73,7 @@ bool enable_output(output_t out, bool enable) {
     }
     return true;
 }
+
+bool output_enabled(output_t out) {
+    return (gpio_get(OUTPUT_PORT[out], OUTPUT_PIN[out]))?true:false;
+}
