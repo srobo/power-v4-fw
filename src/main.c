@@ -48,8 +48,7 @@ void init(void)
     systick_init();
     led_init();
     i2c_init();
-    init_current_sense(BATTERY_SENSE_ADDR, I_CAL_VAL(0.0005));
-    init_current_sense(REG_SENSE_ADDR, I_CAL_VAL(0.010));
+    init_i2c_sensors();
     button_init();
     fan_init();
     adc_init();

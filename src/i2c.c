@@ -190,6 +190,11 @@ bool i2c_recv_bytes(uint8_t addr, uint8_t* buf, uint8_t len) {
     return true;
 }
 
+void init_i2c_sensors() {
+    init_current_sense(BATTERY_SENSE_ADDR, I_CAL_VAL(0.0005));
+    init_current_sense(REG_SENSE_ADDR, I_CAL_VAL(0.010));
+}
+
 void init_current_sense(uint8_t addr, uint16_t cal_val) {
     // Program calibration reg (0x05) w/ shunt value
     i2c_start_message(addr);
