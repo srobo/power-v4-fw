@@ -71,5 +71,29 @@ void read_next_current_phase(uint8_t phase) {
     uint16_t res1 = (uint16_t)(adc_read_regular(ADC1) & 0xffff);
     uint16_t res2 = (uint16_t)(adc_read_regular(ADC2) & 0xffff);
 
-    save_current_values(phase, res1, res2);
+    save_current_values(phase, adc_to_current(res1), adc_to_current(res2));
 }
+
+int16_t adc_to_temp(uint16_t adc_val) {
+    // ADC LSB: 3.3/(2^12) = 805.66e-6 V/bit
+    // V(0deg) = 0.4 V
+    // Offset: 0.4/805.66e-6 = 496.4 bit
+    // Tc = 19.5 mV/deg
+    // 805.66e-6/19.5e-3 = 0.0413 deg/bit
+    // 19.5e-3/805.66e-6 = 24.2 bit/deg = 6656/275
+    int offset = 496;
+
+    // We have a hardware divider, we may as well use it
+    int32_t raw_val = ((int32_t)adc_val - offset);
+    return (int16_t)((raw_val * 6656) / 275);
+}
+uint16_t adc_to_current(uint16_t adc_val) {
+    // ADC LSB: 3.3/(2^12) = 805.66e-6 V/bit
+    // (1/5100)*560 = 109.8e-3 V/A
+    // 805.66/109800 * 1e3 = 7.34 mA/bit = 7 + 9671/28672
+
+    return (7 * adc_val) + (uint16_t)(((uint32_t)adc_val * 9671) / 28672);
+}
+
+
+
