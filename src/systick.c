@@ -2,6 +2,8 @@
 #include "global_vars.h"
 #include "i2c.h"
 #include "adc.h"
+#include "output.h"
+#include "fan.h"
 
 #include <libopencm3/cm3/systick.h>
 #include <libopencm3/cm3/nvic.h>
@@ -38,11 +40,11 @@ void sys_tick_handler(void) {
             init_i2c_sensors();
         }
         // Read INA219's
-        INA219_meas_t res;
         battery = measure_current_sense(BATTERY_SENSE_ADDR);
-        res = measure_current_sense(REG_SENSE_ADDR);
+        reg_5v = measure_current_sense(REG_SENSE_ADDR);
 
-        /// TODO check UVLO
+        // Check UVLO
+        handle_uvlo();
         systick_slow_tick = 0;
     }
     // Every 1s read temp sensor
@@ -50,7 +52,13 @@ void sys_tick_handler(void) {
         // Read temp sense
         board_temp = adc_to_temp(get_adc_measurement(TEMP_SENSE_CHANNEL));
 
-        /// TODO set fan speed
+        // Set fan
+        if(board_temp > FAN_THRESHOLD) {
+            fan_enable(true);
+        } else if (board_temp < FAN_THRESHOLD) {  // 2 degree hysteresis
+            fan_enable(false);
+        }
+
         /// TODO do LED flash
         systick_temp_tick = 0;
     }
@@ -59,5 +67,6 @@ void sys_tick_handler(void) {
     for (uint8_t phase = 0; phase < 4; phase++) {
         read_next_current_phase(phase);
     }
-    /// TODO check current limits
+    // Check current limits
+    detect_overcurrent();
 }

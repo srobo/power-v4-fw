@@ -63,6 +63,8 @@ void jump_to_bootloader(void)
     // Actually wait for the usb peripheral to complete
     // it's acknowledgement to dfu_detach
     delay(20);
+    // Disable outputs, except brain
+    disable_all_outputs(false);
     // Now reset USB
     usb_deinit();
     // Call back into bootloader
