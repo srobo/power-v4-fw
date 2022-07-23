@@ -190,7 +190,7 @@ bool i2c_recv_bytes(uint8_t addr, uint8_t* buf, uint8_t len) {
     return true;
 }
 
-void init_i2c_sensors() {
+void init_i2c_sensors(void) {
     init_current_sense(BATTERY_SENSE_ADDR, I_CAL_VAL(0.0005));
     init_current_sense(REG_SENSE_ADDR, I_CAL_VAL(0.010));
 }

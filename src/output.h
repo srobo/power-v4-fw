@@ -4,16 +4,8 @@
 #include <stdbool.h>
 
 typedef enum {OUT_H0=0, OUT_H1, OUT_L0, OUT_L1, OUT_L2, OUT_L3, OUT_5V} output_t;
-typedef struct {
-    uint16_t H0;
-    uint16_t H1;
-    uint16_t L0;
-    uint16_t L1;
-    uint16_t L2;
-    uint16_t L3;
-} out_current_t;
 
-extern out_current_t output_current;
+extern uint16_t output_current[];
 
 void outputs_init(void);
 

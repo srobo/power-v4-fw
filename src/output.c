@@ -1,4 +1,5 @@
 #include "output.h"
+#include "global_vars.h"
 
 #include <libopencm3/stm32/gpio.h>
 
@@ -11,7 +12,7 @@ static const uint32_t OUTPUT_PIN[7]  = {GPIO10, GPIO11, GPIO6, GPIO7, GPIO8, GPI
 
 static const uint32_t OUTPUT_CSDIS_PIN[4] = {GPIO0, GPIO1, GPIO2, GPIO3};
 
-out_current_t output_current = {0};
+uint16_t output_current[7] = {0};  // reg value here is unused
 
 void outputs_init(void) {
     // SMPS
@@ -47,18 +48,18 @@ void save_current_values(uint8_t phase, uint16_t current1, uint16_t current2) {
     uint16_t total_current = current1 + current2;
     switch (phase) {
         case 0:  // H0
-            output_current.H0 = total_current;
+            output_current[OUT_H0] = total_current;
             break;
         case 1:  // H1
-            output_current.H1 = total_current;
+            output_current[OUT_H1] = total_current;
             break;
         case 2:  // L0 & L1
-            output_current.L0 = current1;
-            output_current.L1 = current2;
+            output_current[OUT_L0] = current1;
+            output_current[OUT_L1] = current2;
             break;
         case 3:  // L2 & L3
-            output_current.L2 = current1;
-            output_current.L3 = current2;
+            output_current[OUT_L2] = current1;
+            output_current[OUT_L3] = current2;
             break;
     }
 }
