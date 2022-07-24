@@ -5,6 +5,7 @@
 #include "output.h"
 #include "fan.h"
 #include "button.h"
+#include "led.h"
 
 #include <libopencm3/cm3/systick.h>
 #include <libopencm3/cm3/nvic.h>
@@ -61,7 +62,7 @@ void sys_tick_handler(void) {
             fan_enable(false);
         }
 
-        /// TODO do LED flash
+        handle_led_flash();
         systick_temp_tick = 0;
     }
 

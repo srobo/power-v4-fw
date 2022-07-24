@@ -111,18 +111,16 @@ int parse_msg(char* buf, char* response, int max_len)
             }
 
             if (strcmp(next_arg, "0") == 0) {
-                /// TODO disable LED flashing
                 clear_led(led);
                 strncat(response, "ACK", max_len);
                 return strlen(response);
             } else if (strcmp(next_arg, "1") == 0) {
-                /// TODO disable LED flashing
                 set_led(led);
                 strncat(response, "ACK", max_len);
                 return strlen(response);
             } else if (strcmp(next_arg, "F") == 0) {
-                /// TODO enable LED flashing
                 toggle_led(led);
+                set_led_flash(led);
                 strncat(response, "ACK", max_len);
                 return strlen(response);
             }
@@ -250,7 +248,6 @@ int parse_msg(char* buf, char* response, int max_len)
         // Disable LEDs
         clear_led(LED_RUN);
         clear_led(LED_ERROR);
-        /// TODO Disable LED flashes
         /// TODO Disable buzzer
         // Clear button state
         int_button_pressed = false;

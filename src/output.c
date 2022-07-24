@@ -156,7 +156,6 @@ void disable_all_outputs(bool disable_brain) {
     }
 
     // Disable run LED
-    /// TODO Disable flashing run led
     clear_led(LED_RUN);
     /// TODO Disable buzzer?
 }

@@ -18,3 +18,6 @@ void led_init(void);
 void set_led(uint32_t pin);
 void clear_led(uint32_t pin);
 void toggle_led(uint32_t pin);
+
+void set_led_flash(uint32_t pin);
+void handle_led_flash(void);
