@@ -60,6 +60,7 @@ void sys_tick_handler(void) {
         }
 
         /// TODO do LED flash
+        /// TODO sample button
         systick_temp_tick = 0;
     }
 

@@ -8,8 +8,6 @@
 #define EXT_BTN_PORT GPIOC
 #define EXT_BTN_PIN GPIO15
 
-extern bool button_pressed;
-
 void button_init(void);
 
 bool button_int_read(void);

@@ -1,6 +1,8 @@
 #include "button.h"
+#include "global_vars.h"
 
-bool button_pressed = false;
+bool int_button_pressed = false;
+bool ext_button_pressed = false;
 
 void button_init(void) {
     gpio_set(INT_BTN_PORT, INT_BTN_PIN); // Pull-up

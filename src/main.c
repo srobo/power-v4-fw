@@ -21,6 +21,8 @@ int main(void)
 {
     init();
 
+    /// TODO enable brain output
+
     // enable status LED
     set_led(LED_RUN);
 
