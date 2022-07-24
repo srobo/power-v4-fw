@@ -164,6 +164,10 @@ int parse_msg(char* buf, char* response, int max_len)
                 strncat(response, int_button_pressed?"1":"0", max_len);
                 strncat(response, ":", max_len - strlen(response));
                 strncat(response, ext_button_pressed?"1":"0", max_len - strlen(response));
+
+                // Clear button state
+                int_button_pressed = false;
+                ext_button_pressed = false;
                 return strlen(response);
             }
 

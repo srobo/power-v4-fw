@@ -85,7 +85,7 @@ int16_t adc_to_temp(uint16_t adc_val) {
 
     // We have a hardware divider, we may as well use it
     int32_t raw_val = ((int32_t)adc_val - offset);
-    return (int16_t)((raw_val * 6656) / 275);
+    return (int16_t)((raw_val * 275) / 6656);
 }
 uint16_t adc_to_current(uint16_t adc_val) {
     // ADC LSB: 3.3/(2^12) = 805.66e-6 V/bit
