@@ -52,9 +52,6 @@ uint16_t get_adc_measurement(uint8_t channel) {
 }
 
 void read_next_current_phase(uint8_t phase) {
-    // Configure CSDIS pins
-    setup_current_phase(phase);
-
     // Select the channel we want to convert.
     uint8_t adc1_channel_array[1] = {0};
     uint8_t adc2_channel_array[1] = {1};
@@ -67,6 +64,11 @@ void read_next_current_phase(uint8_t phase) {
 
     // Wait for end of conversion.
     while (!(adc_eoc(ADC1) && adc_eoc(ADC2)));
+
+    // Configure next phase CSDIS pins
+    setup_current_phase((phase + 1) % 4);
+    // Allow 400us after for CS to fall
+    // Allow 100us before the next measurement
 
     uint16_t res1 = (uint16_t)(adc_read_regular(ADC1) & 0xffff);
     uint16_t res2 = (uint16_t)(adc_read_regular(ADC2) & 0xffff);

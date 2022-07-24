@@ -33,6 +33,7 @@ void outputs_init(void) {
                       GPIO_CNF_OUTPUT_PUSHPULL, OUTPUT_CSDIS_PIN[i]);
         gpio_set(GPIOC, OUTPUT_CSDIS_PIN[i]);
     }
+    setup_current_phase(0);
 }
 
 void setup_current_phase(uint8_t phase) {

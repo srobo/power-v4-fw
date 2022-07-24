@@ -15,15 +15,16 @@ int16_t board_temp = 0;
 
 uint8_t systick_slow_tick = 0;
 uint16_t systick_temp_tick = 0;
+uint8_t current_phase = 0;
 
 void systick_init(void) {
-    // Generate a 1ms systick interrupt
+    // Generate a 0.5ms systick interrupt
     // 72MHz / 8 => 9000000 counts per second
     systick_set_clocksource(STK_CSR_CLKSOURCE_AHB_DIV8);
 
-    // 9000000/9000 = 1000 overflows per second
+    // 9000000/4500 = 2000 overflows per second
     // SysTick interrupt every N clock pulses
-    systick_set_reload(9000);
+    systick_set_reload(4500);
 
     systick_interrupt_enable();
 
@@ -33,7 +34,7 @@ void systick_init(void) {
 
 void sys_tick_handler(void) {
     // Every 20 ms read values from INA219 current sensors
-    if (++systick_slow_tick == 20) {
+    if (++systick_slow_tick == 40) {
         // if watchdog tripped re-init INA219's
         if (i2c_timed_out) {
             // reset watchdog
@@ -49,7 +50,7 @@ void sys_tick_handler(void) {
         systick_slow_tick = 0;
     }
     // Every 1s read temp sensor
-    if (++systick_temp_tick == 1000) {
+    if (++systick_temp_tick == 2000) {
         // Read temp sense
         board_temp = adc_to_temp(get_adc_measurement(TEMP_SENSE_CHANNEL));
 
@@ -65,10 +66,11 @@ void sys_tick_handler(void) {
         systick_temp_tick = 0;
     }
 
-    // Read current ADCs
-    for (uint8_t phase = 0; phase < 4; phase++) {
-        read_next_current_phase(phase);
-    }
+    // Read next ADC phase
+    read_next_current_phase(current_phase);
+    current_phase++;
+    current_phase %= 4;
+
     // Check current limits
     detect_overcurrent();
 }
