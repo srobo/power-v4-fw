@@ -62,9 +62,10 @@ void sys_tick_handler(void) {
         }
 
         /// TODO do LED flash
-        sample_buttons();
         systick_temp_tick = 0;
     }
+
+    sample_buttons();
 
     // Read next ADC phase
     read_next_current_phase(current_phase);

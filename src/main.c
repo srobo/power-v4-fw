@@ -47,7 +47,6 @@ void init(void)
     AFIO_MAPR |= AFIO_MAPR_SWJ_CFG_JTAG_OFF_SW_ON;
 
     usb_init();
-    systick_init();
     led_init();
     i2c_init();
     init_i2c_sensors();
@@ -55,6 +54,7 @@ void init(void)
     fan_init();
     adc_init();
     outputs_init();
+    systick_init();
 }
 
 void jump_to_bootloader(void)
