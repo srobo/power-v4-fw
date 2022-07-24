@@ -12,8 +12,20 @@ void button_init(void) {
 }
 
 bool button_int_read(void) {
-    return gpio_get(INT_BTN_PORT, INT_BTN_PIN);
+    // active low
+    return !gpio_get(INT_BTN_PORT, INT_BTN_PIN);
 }
 bool button_ext_read(void) {
-    return gpio_get(EXT_BTN_PORT, EXT_BTN_PIN);
+    // active low
+    return !gpio_get(EXT_BTN_PORT, EXT_BTN_PIN);
+}
+
+void sample_buttons(void) {
+    // latch in button presses
+    if (button_int_read()) {
+        int_button_pressed = true;
+    }
+    if (button_ext_read()) {
+        ext_button_pressed = true;
+    }
 }

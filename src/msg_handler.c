@@ -5,6 +5,7 @@
 
 #include "msg_handler.h"
 #include "global_vars.h"
+#include "output.h"
 #include "led.h"
 
 static char* itoa(int value, char* string);
@@ -256,7 +257,6 @@ int parse_msg(char* buf, char* response, int max_len)
         ext_button_pressed = false;
         strncat(response, "ACK", max_len);
         return strlen(response);
-    if (strcmp(next_arg, "ECHO") == 0) {
     } else if (strcmp(next_arg, "ECHO") == 0) {
         next_arg = strtok(NULL, ":");
 
