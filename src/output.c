@@ -1,8 +1,11 @@
 #include "output.h"
 #include "global_vars.h"
 #include "led.h"
+#include "fan.h"
+#include "cdcacm.h"
 
 #include <libopencm3/stm32/gpio.h>
+#include <libopencm3/cm3/systick.h>
 
 #define REG_TRIM_PORT GPIOC
 #define REG_TRIM_PIN GPIO12
@@ -94,8 +97,12 @@ void handle_uvlo(void) {
         disable_all_outputs(true);
         set_led(LED_FLAT);  /// TODO enable toggling flat LED
     }
-    /// TODO disable systick & USB
-    /// TODO disable fan
+    // Disable systick & USB
+    systick_counter_disable();
+    usb_deinit();
+
+    // Disable fan
+    fan_enable(false);
 }
 
 void detect_overcurrent(void) {
