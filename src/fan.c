@@ -12,3 +12,7 @@ void fan_enable(const bool enable) {
         gpio_clear(FAN_PORT, FAN_PIN);
     }
 }
+
+bool fan_running(void) {
+    return gpio_get(FAN_PORT, FAN_PIN);
+}

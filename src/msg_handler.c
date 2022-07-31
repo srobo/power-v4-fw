@@ -7,6 +7,7 @@
 #include "global_vars.h"
 #include "output.h"
 #include "led.h"
+#include "fan.h"
 #include "buzzer.h"
 
 static char* itoa(int value, char* string);
@@ -240,11 +241,17 @@ int parse_msg(char* buf, char* response, int max_len)
         }
         strncat(response, ":", max_len - strlen(response));
         strncat(response, itoa(board_temp, temp_str), max_len);
+        strncat(response, ":", max_len - strlen(response));
+        strncat(response, (fan_running()?"1":"0"), max_len);
         return strlen(response);
     } else if (strcmp(next_arg, "*RESET") == 0) {
         for (uint8_t i = 0; i < 7; i++) {
             output_inhibited[i] = false;
-            enable_output(i, false);
+            if (i == BRAIN_OUTPUT) {
+                enable_output(i, true);
+            } else {
+                enable_output(i, false);
+            }
         }
 
         // Disable LEDs

@@ -9,3 +9,4 @@
 void fan_init(void);
 
 void fan_enable(const bool enable);
+bool fan_running(void);
