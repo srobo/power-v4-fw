@@ -24,8 +24,9 @@ int main(void)
 
     /// TODO enable brain output
 
-    // enable status LED
+    // Signal we initialised
     set_led(LED_RUN);
+    set_led(LED_ERROR);
 
     // Startup beep
     buzzer_note(261, 150);

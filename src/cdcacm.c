@@ -28,6 +28,7 @@
 #include "cdcacm.h"
 #include "msg_handler.h"
 #include "output.h"
+#include "led.h"
 
 #define SERIALNUM_BOOTLOADER_LOC 0x08001FE0
 
@@ -327,6 +328,9 @@ static void cdcacm_set_config(usbd_device *usbd_dev, uint16_t wValue)
                 USB_REQ_TYPE_CLASS | USB_REQ_TYPE_INTERFACE,
                 USB_REQ_TYPE_TYPE | USB_REQ_TYPE_RECIPIENT,
                 cdcacm_control_request);
+
+    // Indicate we've enumerated
+    clear_led(LED_ERROR);
 }
 
 void usb_init(void)
