@@ -96,13 +96,14 @@ void handle_uvlo(void) {
     if ((battery.success) && (battery.voltage < 10200)) {
         disable_all_outputs(true);
         set_led(LED_FLAT);  /// TODO enable toggling flat LED
-    }
-    // Disable systick & USB
-    systick_counter_disable();
-    usb_deinit();
 
-    // Disable fan
-    fan_enable(false);
+        // Disable systick & USB
+        systick_counter_disable();
+        usb_deinit();
+
+        // Disable fan
+        fan_enable(false);
+    }
 }
 
 void detect_overcurrent(void) {
