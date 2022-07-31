@@ -13,6 +13,7 @@
 #include "adc.h"
 #include "output.h"
 #include "buzzer.h"
+#include "global_vars.h"
 
 #define REENTER_BOOTLOADER_RENDEZVOUS	0x08001FFC
 
@@ -23,7 +24,8 @@ int main(void)
 {
     init();
 
-    /// TODO enable brain output
+    // Enable brain output
+    enable_output(BRAIN_OUTPUT, true);
 
     // Signal we initialised
     set_led(LED_RUN);
