@@ -7,6 +7,7 @@
 #include "global_vars.h"
 #include "output.h"
 #include "led.h"
+#include "buzzer.h"
 
 static char* itoa(int value, char* string);
 
@@ -216,7 +217,8 @@ int parse_msg(char* buf, char* response, int max_len)
             return strlen(response);
         }
 
-        /// TODO generate note
+        // Generate note
+        buzzer_note(note_freq, note_dur);
 
         strncat(response, "ACK", max_len);
         return strlen(response);
@@ -248,7 +250,8 @@ int parse_msg(char* buf, char* response, int max_len)
         // Disable LEDs
         clear_led(LED_RUN);
         clear_led(LED_ERROR);
-        /// TODO Disable buzzer
+        // Disable buzzer
+        buzzer_stop();
         // Clear button state
         int_button_pressed = false;
         ext_button_pressed = false;

@@ -11,6 +11,7 @@
 #include "fan.h"
 #include "adc.h"
 #include "output.h"
+#include "buzzer.h"
 
 #define REENTER_BOOTLOADER_RENDEZVOUS	0x08001FFC
 
@@ -25,6 +26,9 @@ int main(void)
 
     // enable status LED
     set_led(LED_RUN);
+
+    // Startup beep
+    buzzer_note(261, 150);
 
     while (1) {
         usb_poll();
@@ -54,6 +58,7 @@ void init(void)
     fan_init();
     adc_init();
     outputs_init();
+    buzzer_init();
     systick_init();
 }
 

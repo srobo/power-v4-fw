@@ -6,6 +6,7 @@
 #include "fan.h"
 #include "button.h"
 #include "led.h"
+#include "buzzer.h"
 
 #include <libopencm3/cm3/systick.h>
 #include <libopencm3/cm3/nvic.h>
@@ -16,6 +17,7 @@ int16_t board_temp = 0;
 
 uint8_t systick_slow_tick = 0;
 uint16_t systick_temp_tick = 0;
+uint8_t systick_buzzer_tick = 0;
 uint8_t current_phase = 0;
 
 void systick_init(void) {
@@ -64,6 +66,12 @@ void sys_tick_handler(void) {
 
         handle_led_flash();
         systick_temp_tick = 0;
+    }
+
+    // 1kHz tick
+    if (++systick_buzzer_tick == 2) {
+        buzzer_tick();
+        systick_buzzer_tick = 0;
     }
 
     sample_buttons();

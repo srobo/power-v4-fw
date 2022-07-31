@@ -3,6 +3,7 @@
 #include "led.h"
 #include "fan.h"
 #include "cdcacm.h"
+#include "buzzer.h"
 
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/cm3/systick.h>
@@ -165,5 +166,8 @@ void disable_all_outputs(bool disable_brain) {
 
     // Disable run LED
     clear_led(LED_RUN);
-    /// TODO Disable buzzer?
+    // Disable buzzer
+    buzzer_stop();
+
+    set_led(LED_ERROR);
 }
