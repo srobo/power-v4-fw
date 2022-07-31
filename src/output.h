@@ -20,3 +20,5 @@ void handle_uvlo(void);
 void detect_overcurrent(void);
 
 void disable_all_outputs(bool disable_brain);
+
+void usb_reset_callback(void);

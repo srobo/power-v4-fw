@@ -171,3 +171,18 @@ void disable_all_outputs(bool disable_brain) {
 
     set_led(LED_ERROR);
 }
+
+void usb_reset_callback(void) {
+    // Switch off all outputs except brain
+    for (uint8_t i = 0; i < 7; i++) {
+        if (i != BRAIN_OUTPUT) {
+            enable_output(i, false);
+        }
+    }
+
+    // Disable buzzer
+    buzzer_stop();
+
+    set_led(LED_RUN);
+    set_led(LED_ERROR);
+}

@@ -27,6 +27,7 @@
 
 #include "cdcacm.h"
 #include "msg_handler.h"
+#include "output.h"
 
 #define SERIALNUM_BOOTLOADER_LOC 0x08001FE0
 
@@ -337,6 +338,10 @@ void usb_init(void)
 
     g_usbd_dev = usbd_init(&st_usbfs_v1_usb_driver, &dev, &config, usb_strings, 5, usbd_control_buffer, sizeof(usbd_control_buffer));
     usbd_register_set_config_callback(g_usbd_dev, cdcacm_set_config);
+    // Callback run when the host resets the connection
+    usbd_register_reset_callback(g_usbd_dev, usb_reset_callback);
+    // Callback run when bus has no activity for 3ms, i.e. a disconnection
+    usbd_register_suspend_callback(g_usbd_dev, usb_reset_callback);
 
     gpio_set(GPIOA, GPIO8);  // enable ext USB enable
 }
