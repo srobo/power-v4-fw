@@ -2,6 +2,7 @@
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/cm3/systick.h>
+#include <libopencm3/stm32/iwdg.h>
 
 #include "cdcacm.h"
 #include "systick.h"
@@ -36,6 +37,8 @@ int main(void)
         if (re_enter_bootloader) {
             jump_to_bootloader();
         }
+        // Reset watchdog after successfully Doing Things
+		iwdg_reset();
     }
 }
 
@@ -61,6 +64,10 @@ void init(void)
     outputs_init();
     buzzer_init();
     systick_init();
+
+    // Configure watchdog. Period: 50ms
+    iwdg_set_period_ms(50);
+    iwdg_start();
 }
 
 void jump_to_bootloader(void)
