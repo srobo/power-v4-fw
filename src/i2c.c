@@ -8,6 +8,7 @@
 
 
 volatile bool i2c_timed_out = false;
+INA219_offset_t INA219_offsets[NUM_INA219] = {0};
 
 void i2c_init(void){
     // Set I2C alternate functions on PB6 & PB7
@@ -190,6 +191,43 @@ bool i2c_recv_bytes(uint8_t addr, uint8_t* buf, uint8_t len) {
     return true;
 }
 
+static void set_current_offset_value(uint8_t addr) {
+    // Set register pointer to current register
+    i2c_start_message(addr);
+    i2c_send_byte(0x04);
+    i2c_stop_message();
+
+    uint8_t val[2];
+    bool i_success = i2c_recv_bytes(addr, val, 2);
+
+    if (!i_success) {
+        return;
+    }
+
+    int16_t current = (int16_t)(((uint16_t)val[0] << 8) | ((uint16_t)val[1] & 0xff));
+
+    // store offset in first available index
+    for (uint8_t i=0; i < NUM_INA219; i++) {
+        if (INA219_offsets[i].addr == 0) {
+            INA219_offsets[i].addr = addr;
+            INA219_offsets[i].offset = current;
+            return;
+        }
+    }
+}
+
+static int16_t get_current_offset_value(uint8_t addr) {
+    // lookup offset with matching address
+    for (uint8_t i=0; i < NUM_INA219; i++) {
+        if (INA219_offsets[i].addr == addr) {
+            return INA219_offsets[i].offset;
+        }
+    }
+
+    // return 0 if no match found
+    return 0;
+}
+
 void init_i2c_sensors(void) {
     init_current_sense(BATTERY_SENSE_ADDR, I_CAL_VAL(0.0005 * 10), INA219_CONF(0b00, 0b1100));  // Use 10mA LSB
     init_current_sense(REG_SENSE_ADDR, I_CAL_VAL(0.010), INA219_CONF(0b11, 0b0011));
@@ -206,6 +244,7 @@ void init_current_sense(uint8_t addr, uint16_t cal_val, uint16_t conf_val) {
     i2c_send_byte((uint8_t)((conf_val >> 8) & 0xff));
     i2c_send_byte((uint8_t)(conf_val & 0xff));
     i2c_stop_message();
+    set_current_offset_value(addr);
 }
 
 INA219_meas_t measure_current_sense(uint8_t addr) {
@@ -220,6 +259,7 @@ INA219_meas_t measure_current_sense(uint8_t addr) {
     bool i_success = i2c_recv_bytes(addr, val, 2);
 
     res.current = (int16_t)(((uint16_t)val[0] << 8) | ((uint16_t)val[1] & 0xff));
+    res.current -= get_current_offset_value(addr);
 
     // Set register pointer to voltage register
     i2c_start_message(addr);
