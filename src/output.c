@@ -154,6 +154,19 @@ void detect_overcurrent(void) {
         disable_all_outputs(true);
         /// TODO sound buzzer
     }
+
+    // Also test combined output current
+    int total_current = 0;
+    for (output_t out=OUT_H0; out < OUT_5V; out++) {
+        total_current += output_current[out];
+    }
+    if (reg_5v.success) {
+        total_current += reg_5v.current;
+    }
+    if (total_current > 30000) {
+        disable_all_outputs(true);
+        /// TODO sound buzzer
+    }
 }
 
 void disable_all_outputs(bool disable_brain) {
