@@ -191,16 +191,20 @@ bool i2c_recv_bytes(uint8_t addr, uint8_t* buf, uint8_t len) {
 }
 
 void init_i2c_sensors(void) {
-    init_current_sense(BATTERY_SENSE_ADDR, I_CAL_VAL(0.0005));
-    init_current_sense(REG_SENSE_ADDR, I_CAL_VAL(0.010));
+    init_current_sense(BATTERY_SENSE_ADDR, I_CAL_VAL(0.0005 * 10), INA219_CONF(0b00, 0b1100));  // Use 10mA LSB
+    init_current_sense(REG_SENSE_ADDR, I_CAL_VAL(0.010), INA219_CONF(0b11, 0b0011));
 }
 
-void init_current_sense(uint8_t addr, uint16_t cal_val) {
+void init_current_sense(uint8_t addr, uint16_t cal_val, uint16_t conf_val) {
     // Program calibration reg (0x05) w/ shunt value
     i2c_start_message(addr);
     i2c_send_byte(0x05);  // calibration reg address
     i2c_send_byte((uint8_t)((cal_val >> 8) & 0xff));
     i2c_send_byte((uint8_t)(cal_val & 0xff));
+    i2c_start_message(addr);
+    i2c_send_byte(0x00);  // configuration reg address
+    i2c_send_byte((uint8_t)((conf_val >> 8) & 0xff));
+    i2c_send_byte((uint8_t)(conf_val & 0xff));
     i2c_stop_message();
 }
 
