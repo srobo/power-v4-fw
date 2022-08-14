@@ -31,6 +31,9 @@ int main(void)
     set_led(LED_RUN);
     set_led(LED_ERROR);
 
+    // Poll once to trigger usb suspend callback
+    usb_poll();
+
     // Startup beep
     buzzer_note(261, 150);
 
