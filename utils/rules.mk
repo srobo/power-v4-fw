@@ -176,7 +176,7 @@ endif
 ifeq ($(VID),)
 ifeq ($(PID),)
 VID	:=	1bda
-PID	:=	0011
+PID	:=	0010
 endif
 endif
 
@@ -264,4 +264,5 @@ endif
 
 %.dfu:	%.bin
 	@printf "  DFU   $(*).bin\n"
-	$(Q)$(DFU_UTIL) -E 1 -d $(VID):$(PID) -D $(*).bin
+# dfu-util always returns an error
+	$(Q)$(DFU_UTIL) -E 1 -d $(VID):$(PID) -D $(*).bin || true
