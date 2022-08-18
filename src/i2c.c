@@ -6,9 +6,19 @@
     i2c_timed_out = true; \
     if (I2C_SR2(I2C1) & I2C_SR2_BUSY) {i2c_send_stop(I2C1);} return x;}
 
+#define delay(ms) do { \
+    for (int i = 0; i < ms * 2000; i++) \
+        __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); \
+        __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); \
+        __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); \
+        __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); \
+        __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); \
+        __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); \
+    } while(0)
 
 volatile bool i2c_timed_out = false;
-INA219_offset_t INA219_offsets[NUM_INA219] = {0};
+// this can be 2 to cover the connected INA219's but 16 covers all of the configurable addresses
+int16_t ina219_offsets[16] = {0};
 
 void i2c_init(void){
     // Set I2C alternate functions on PB6 & PB7
@@ -206,26 +216,12 @@ static void set_current_offset_value(uint8_t addr) {
 
     int16_t current = (int16_t)(((uint16_t)val[0] << 8) | ((uint16_t)val[1] & 0xff));
 
-    // store offset in first available index
-    for (uint8_t i=0; i < NUM_INA219; i++) {
-        if (INA219_offsets[i].addr == 0) {
-            INA219_offsets[i].addr = addr;
-            INA219_offsets[i].offset = current;
-            return;
-        }
-    }
+    ina219_offsets[addr & 0xf] = current;
 }
 
 static int16_t get_current_offset_value(uint8_t addr) {
     // lookup offset with matching address
-    for (uint8_t i=0; i < NUM_INA219; i++) {
-        if (INA219_offsets[i].addr == addr) {
-            return INA219_offsets[i].offset;
-        }
-    }
-
-    // return 0 if no match found
-    return 0;
+    return ina219_offsets[addr & 0xf];
 }
 
 void init_i2c_sensors(void) {
@@ -244,6 +240,8 @@ void init_current_sense(uint8_t addr, uint16_t cal_val, uint16_t conf_val) {
     i2c_send_byte((uint8_t)((conf_val >> 8) & 0xff));
     i2c_send_byte((uint8_t)(conf_val & 0xff));
     i2c_stop_message();
+    // wait for a measurement to be made
+    delay(10);
     set_current_offset_value(addr);
 }
 
