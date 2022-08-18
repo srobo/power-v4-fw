@@ -6,6 +6,7 @@
 
 
 volatile uint32_t buzzer_ticks_remaining = 0;
+volatile bool buzzer_running_flag = false;
 
 void buzzer_init(void) {
     // Enable TIM3 clock
@@ -43,13 +44,20 @@ void buzzer_note(uint16_t freq, uint32_t duration) {
     // Enable timer
     timer_enable_counter(TIM3);
     buzzer_ticks_remaining = duration;
+    buzzer_running_flag = true;
 }
 
 void buzzer_stop(void) {
     // Disable timer
     timer_disable_counter(TIM3);
+    timer_set_counter(TIM3, 0);
 
+    buzzer_running_flag = false;
     buzzer_ticks_remaining = 0;
+}
+
+bool buzzer_running(void) {
+    return buzzer_running_flag;
 }
 
 void buzzer_tick(void) {

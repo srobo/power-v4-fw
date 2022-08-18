@@ -31,11 +31,14 @@ int main(void)
     set_led(LED_RUN);
     set_led(LED_ERROR);
 
-    // Poll once to trigger usb suspend callback
-    usb_poll();
-
     // Startup beep
-    buzzer_note(261, 150);
+    buzzer_note(523, 150);
+    while (buzzer_running()) {  // wait for start beep to finish
+        iwdg_reset();
+        delay(20);
+    }
+
+    delay(200);
 
     while (1) {
         usb_poll();
