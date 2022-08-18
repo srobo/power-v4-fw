@@ -226,7 +226,7 @@ static int16_t get_current_offset_value(uint8_t addr) {
 
 void init_i2c_sensors(void) {
     init_current_sense(BATTERY_SENSE_ADDR, I_CAL_VAL(0.0005 * 10), INA219_CONF(0b00, 0b1100));  // Use 10mA LSB
-    init_current_sense(REG_SENSE_ADDR, I_CAL_VAL(0.010), INA219_CONF(0b11, 0b0011));
+    init_current_sense(REG_SENSE_ADDR, I_CAL_VAL(0.010), INA219_CONF(0b11, 0b1100));
 }
 
 void init_current_sense(uint8_t addr, uint16_t cal_val, uint16_t conf_val) {
