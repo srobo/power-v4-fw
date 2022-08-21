@@ -246,7 +246,7 @@ int parse_msg(char* buf, char* response, int max_len)
         return strlen(response);
     } else if (strcmp(next_arg, "*RESET") == 0) {
         for (uint8_t i = 0; i < 7; i++) {
-            output_inhibited[i] = false;
+            set_overcurrent(i, false);
             if (i == BRAIN_OUTPUT) {
                 enable_output(i, true);
             } else {

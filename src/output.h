@@ -18,6 +18,7 @@ bool output_enabled(output_t out);
 
 void handle_uvlo(void);
 void detect_overcurrent(void);
+void set_overcurrent(output_t out, bool overcurrent);
 
 void disable_all_outputs(bool disable_brain);
 

@@ -92,6 +92,48 @@ bool output_enabled(output_t out) {
     return (gpio_get(OUTPUT_PORT[out], OUTPUT_PIN[out]))?true:false;
 }
 
+void set_overcurrent(output_t out, bool overcurrent) {
+    if (overcurrent) {
+        // disable channel
+        _enable_output(out, false);
+        output_inhibited[out] = true;
+        // set channel error LED
+        switch (out) {
+            case OUT_H0:
+                set_led(LED_STATH0); break;
+            case OUT_H1:
+                set_led(LED_STATH1); break;
+            case OUT_L0:
+                set_led(LED_STATL0); break;
+            case OUT_L1:
+                set_led(LED_STATL1); break;
+            case OUT_L2:
+                set_led(LED_STATL2); break;
+            case OUT_L3:
+                set_led(LED_STATL3); break;
+            default: break;
+        }
+    } else {
+        output_inhibited[out] = false;
+        // clear channel error LED
+        switch (out) {
+            case OUT_H0:
+                clear_led(LED_STATH0); break;
+            case OUT_H1:
+                clear_led(LED_STATH1); break;
+            case OUT_L0:
+                clear_led(LED_STATL0); break;
+            case OUT_L1:
+                clear_led(LED_STATL1); break;
+            case OUT_L2:
+                clear_led(LED_STATL2); break;
+            case OUT_L3:
+                clear_led(LED_STATL3); break;
+            default: break;
+        }
+    }
+}
+
 void handle_uvlo(void) {
     // Test if global voltage is below 10.2V
     if ((battery.success) && (battery.voltage < 10200)) {
@@ -112,49 +154,21 @@ void detect_overcurrent(void) {
     for (output_t out=OUT_H0; out <= OUT_H1; out++) {
         if (output_current[out] > 20000) {
             // disable channel
-            _enable_output(out, false);
-            output_inhibited[out] = true;
-            // set channel error LED
-            switch (out) {
-                case OUT_H0:
-                    set_led(LED_STATH0); break;
-                case OUT_H1:
-                    set_led(LED_STATH1); break;
-                default: break;
-            }
+            set_overcurrent(out, true);
         }
     }
     for (output_t out=OUT_L0; out <= OUT_L3; out++) {
         if (output_current[out] > 10000) {
             // disable channel
-            _enable_output(out, false);
-            output_inhibited[out] = true;
-            // set channel error LED
-            switch (out) {
-                case OUT_L0:
-                    set_led(LED_STATL0); break;
-                case OUT_L1:
-                    set_led(LED_STATL1); break;
-                case OUT_L2:
-                    set_led(LED_STATL2); break;
-                case OUT_L3:
-                    set_led(LED_STATL3); break;
-                default: break;
-            }
+            set_overcurrent(out, true);
         }
     }
     if ((reg_5v.success) && (reg_5v.current > 2000)) {
         // disable channel
-        _enable_output(OUT_5V, false);
-        output_inhibited[OUT_5V] = true;
+        set_overcurrent(OUT_5V, true);
     }
 
     // Test global current
-    if ((battery.success) && (battery.current > 30000)) {
-        disable_all_outputs(true);
-        /// TODO sound buzzer
-    }
-
     // Also test combined output current
     int total_current = 0;
     for (output_t out=OUT_H0; out < OUT_5V; out++) {
@@ -163,7 +177,10 @@ void detect_overcurrent(void) {
     if (reg_5v.success) {
         total_current += reg_5v.current;
     }
-    if (total_current > 30000) {
+    if (
+        (total_current > 30000)
+        || ((battery.success) && (battery.current > 30000))
+    ) {
         disable_all_outputs(true);
         /// TODO sound buzzer
     }
