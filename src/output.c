@@ -18,6 +18,7 @@ static const uint32_t OUTPUT_PIN[7]  = {GPIO10, GPIO11, GPIO6, GPIO7, GPIO8, GPI
 
 static const uint32_t OUTPUT_CSDIS_PIN[4] = {GPIO0, GPIO1, GPIO2, GPIO3};
 
+uint8_t overcurrent_delay[8] = {0};
 uint16_t output_current[7] = {0};  // reg value here is unused
 bool output_inhibited[7] = {0};
 
@@ -163,21 +164,27 @@ void handle_uvlo(void) {
 
 void detect_overcurrent(void) {
     // Test individual output currents
-    for (output_t out=OUT_H0; out <= OUT_H1; out++) {
-        if (output_current[out] > 20000) {
-            // disable channel
-            set_overcurrent(out, true);
-        }
-    }
-    for (output_t out=OUT_L0; out <= OUT_L3; out++) {
-        if (output_current[out] > 10000) {
-            // disable channel
-            set_overcurrent(out, true);
+    for (output_t out=OUT_H0; out <= OUT_L3; out++) {
+        uint16_t current_limit = (out <= OUT_H1)? 20000 : 10000;
+
+        if (output_current[out] > current_limit) {
+            overcurrent_delay[out]++;
+            if (overcurrent_delay[out] >= 1) {
+                // disable channel
+                set_overcurrent(out, true);
+            }
+        } else {
+            overcurrent_delay[out] = 0;
         }
     }
     if ((reg_5v.success) && (reg_5v.current > 2000)) {
-        // disable channel
-        set_overcurrent(OUT_5V, true);
+        overcurrent_delay[OUT_5V]++;
+        if (overcurrent_delay[OUT_5V] >= 1) {
+            // disable channel
+            set_overcurrent(OUT_5V, true);
+        }
+    } else {
+        overcurrent_delay[OUT_5V] = 0;
     }
 
     // Test global current
@@ -193,44 +200,48 @@ void detect_overcurrent(void) {
         (total_current > 30000)
         || ((battery.success) && (battery.current > 30000))
     ) {
-        disable_all_outputs(true);
+        overcurrent_delay[7]++;
+        if (overcurrent_delay[7] >= 1) {
+            disable_all_outputs(true);
 
-        // Disable systick & USB
-        systick_counter_disable();
-        usb_deinit();
+            // Disable systick & USB
+            systick_counter_disable();
+            usb_deinit();
 
-        // Enable fan
-        fan_enable(true);
+            // Enable fan
+            fan_enable(true);
 
-        while (1) {
-            // sound buzzer
-            // buzzer duration is meaningless now systick is stopped
-            buzzer_note(2000, 1000);
-            for (unsigned int j = 0; j < 50; j++) {
-                delay(20);
-                iwdg_reset();
+            while (1) {
+                // sound buzzer
+                // buzzer duration is meaningless now systick is stopped
+                buzzer_note(2000, 1000);
+                for (unsigned int j = 0; j < 50; j++) {
+                    delay(20);
+                    iwdg_reset();
+                }
+
+                // stop buzzer
+                buzzer_stop();
+                for (unsigned int j = 0; j < 25; j++) {
+                    delay(20);
+                    iwdg_reset();
+                }
+
+                // test battery undervoltage
+                // if watchdog tripped re-init INA219's
+                if (i2c_timed_out) {
+                    // reset watchdog
+                    reset_i2c_watchdog();
+                    init_i2c_sensors();
+                }
+                // Read INA219
+                battery = measure_current_sense(BATTERY_SENSE_ADDR);
+                battery.current *= 10;  // convert to 1mA LSB
+                handle_uvlo();
             }
-
-            // stop buzzer
-            buzzer_stop();
-            for (unsigned int j = 0; j < 25; j++) {
-                delay(20);
-                iwdg_reset();
-            }
-
-            // test battery undervoltage
-            // if watchdog tripped re-init INA219's
-            if (i2c_timed_out) {
-                // reset watchdog
-                reset_i2c_watchdog();
-                init_i2c_sensors();
-            }
-            // Read INA219
-            battery = measure_current_sense(BATTERY_SENSE_ADDR);
-            battery.current *= 10;  // convert to 1mA LSB
-            handle_uvlo();
         }
-
+    } else {
+        overcurrent_delay[7] = 0;
     }
 }
 
