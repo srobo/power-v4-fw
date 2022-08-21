@@ -38,8 +38,6 @@ int main(void)
         delay(20);
     }
 
-    delay(200);
-
     while (1) {
         usb_poll();
         if (re_enter_bootloader) {
@@ -85,7 +83,7 @@ void jump_to_bootloader(void)
 
     // Actually wait for the usb peripheral to complete
     // it's acknowledgement to dfu_detach
-    delay(20);
+    delay(1);
     // Disable outputs, except brain
     disable_all_outputs(false);
     // Now reset USB

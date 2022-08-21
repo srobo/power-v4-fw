@@ -1,4 +1,5 @@
 #include "i2c.h"
+#include "global_vars.h"
 
 // A timed out I2C device will NACK after receiving a byte
 #define I2C_EXIT_ON_FAILED(x) if(i2c_timed_out) { return x;}
@@ -6,15 +7,6 @@
     i2c_timed_out = true; \
     if (I2C_SR2(I2C1) & I2C_SR2_BUSY) {i2c_send_stop(I2C1);} return x;}
 
-#define delay(ms) do { \
-    for (int i = 0; i < ms * 2000; i++) \
-        __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); \
-        __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); \
-        __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); \
-        __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); \
-        __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); \
-        __asm__("nop"); __asm__("nop"); __asm__("nop"); __asm__("nop"); \
-    } while(0)
 
 volatile bool i2c_timed_out = false;
 // this can be 2 to cover the connected INA219's but 16 covers all of the configurable addresses

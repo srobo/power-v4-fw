@@ -28,6 +28,7 @@
 #include "cdcacm.h"
 #include "msg_handler.h"
 #include "output.h"
+#include "global_vars.h"
 #include "led.h"
 
 #define SERIALNUM_BOOTLOADER_LOC 0x08001FE0
@@ -357,7 +358,7 @@ void usb_deinit(void)
 
     // Wait a few ms, then poll a few times to ensure that the driver
     // has reset itself
-    delay(20);
+    delay(2);
     usb_poll();
     usb_poll();
     usb_poll();
