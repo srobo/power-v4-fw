@@ -7,6 +7,7 @@
 
 #include <libopencm3/stm32/gpio.h>
 #include <libopencm3/cm3/systick.h>
+#include <libopencm3/stm32/iwdg.h>
 
 #define REG_TRIM_PORT GPIOC
 #define REG_TRIM_PIN GPIO12
@@ -138,7 +139,7 @@ void handle_uvlo(void) {
     // Test if global voltage is below 10.2V
     if ((battery.success) && (battery.voltage < 10200)) {
         disable_all_outputs(true);
-        set_led(LED_FLAT);  /// TODO enable toggling flat LED
+        set_led(LED_FLAT);
 
         // Disable systick & USB
         systick_counter_disable();
@@ -146,6 +147,17 @@ void handle_uvlo(void) {
 
         // Disable fan
         fan_enable(false);
+
+        while (1) {
+            // flash flat LED
+            toggle_led(LED_FLAT);
+
+            for (unsigned int j = 0; j < 25; j++) {
+                delay(20);
+                iwdg_reset();
+            }
+        }
+
     }
 }
 
@@ -182,7 +194,43 @@ void detect_overcurrent(void) {
         || ((battery.success) && (battery.current > 30000))
     ) {
         disable_all_outputs(true);
-        /// TODO sound buzzer
+
+        // Disable systick & USB
+        systick_counter_disable();
+        usb_deinit();
+
+        // Enable fan
+        fan_enable(true);
+
+        while (1) {
+            // sound buzzer
+            // buzzer duration is meaningless now systick is stopped
+            buzzer_note(2000, 1000);
+            for (unsigned int j = 0; j < 50; j++) {
+                delay(20);
+                iwdg_reset();
+            }
+
+            // stop buzzer
+            buzzer_stop();
+            for (unsigned int j = 0; j < 25; j++) {
+                delay(20);
+                iwdg_reset();
+            }
+
+            // test battery undervoltage
+            // if watchdog tripped re-init INA219's
+            if (i2c_timed_out) {
+                // reset watchdog
+                reset_i2c_watchdog();
+                init_i2c_sensors();
+            }
+            // Read INA219
+            battery = measure_current_sense(BATTERY_SENSE_ADDR);
+            battery.current *= 10;  // convert to 1mA LSB
+            handle_uvlo();
+        }
+
     }
 }
 
