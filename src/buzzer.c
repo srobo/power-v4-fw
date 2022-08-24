@@ -14,7 +14,7 @@ void buzzer_init(void) {
 
     // Reset TIM3 peripheral.
     rcc_periph_reset_pulse(RST_TIM3);
-    timer_set_prescaler(TIM3, 72); // 72Mhz -> 1Mhz
+    timer_set_prescaler(TIM3, 72);  // 72Mhz -> 1Mhz
     timer_set_period(TIM1, UINT16_MAX);  // default value, will be overridden
 
     // Up counting, edge triggered no divider

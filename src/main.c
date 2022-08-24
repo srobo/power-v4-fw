@@ -20,8 +20,7 @@
 void init(void);
 void jump_to_bootloader(void);
 
-int main(void)
-{
+int main(void) {
     init();
 
     // Enable brain output
@@ -48,8 +47,7 @@ int main(void)
     }
 }
 
-void init(void)
-{
+void init(void) {
     rcc_clock_setup_pll(&rcc_hse_configs[RCC_CLOCK_HSE8_72MHZ]);
 
     rcc_periph_clock_enable(RCC_GPIOA);
@@ -76,8 +74,7 @@ void init(void)
     iwdg_start();
 }
 
-void jump_to_bootloader(void)
-{
+void jump_to_bootloader(void) {
     // Disable systick
     systick_counter_disable();
 
@@ -97,8 +94,7 @@ void jump_to_bootloader(void)
 // libopencm3's reset handler, this copies .data into sram.
 extern void *vector_table;
 extern __attribute__((naked)) void reset_handler(void);
-uint32_t app_start_address[3] __attribute__((section(".startup"))) =
-{
+uint32_t app_start_address[3] __attribute__((section(".startup"))) = {
     (uint32_t)&vector_table,
     (uint32_t)&reset_handler,
     (uint32_t)0x00000000,  // CRC checksum of the compiled binary

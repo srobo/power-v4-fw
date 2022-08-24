@@ -12,7 +12,7 @@ volatile bool i2c_timed_out = false;
 // this can be 2 to cover the connected INA219's but 16 covers all of the configurable addresses
 int16_t ina219_offsets[16] = {0};
 
-void i2c_init(void){
+void i2c_init(void) {
     // Set I2C alternate functions on PB6 & PB7
     gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ,
               GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO_I2C1_SCL);
@@ -32,7 +32,7 @@ void i2c_init(void){
     i2c_peripheral_enable(I2C1);
 }
 
-void i2c_start_message(uint8_t addr){
+void i2c_start_message(uint8_t addr) {
     uint32_t reg32 __attribute__((unused));
 
     I2C_EXIT_ON_FAILED();
@@ -55,7 +55,7 @@ void i2c_start_message(uint8_t addr){
     reg32 = I2C_SR2(I2C1);
 }
 
-void i2c_stop_message(void){
+void i2c_stop_message(void) {
     I2C_EXIT_ON_FAILED();
 
     // Wait for the data register to be empty or a NACK to be generated.
@@ -66,7 +66,7 @@ void i2c_stop_message(void){
     i2c_send_stop(I2C1);
 }
 
-void i2c_send_byte(char c){
+void i2c_send_byte(char c) {
     I2C_EXIT_ON_FAILED();
 
     i2c_send_data(I2C1, c);

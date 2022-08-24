@@ -165,8 +165,8 @@ const struct usb_interface_descriptor dfu_iface[] = {{
     .bAlternateSetting = 0,
     .bNumEndpoints = 0,
     .bInterfaceClass = USB_CLASS_DFU,
-    .bInterfaceSubClass = 0x01, // DFU
-    .bInterfaceProtocol = 0x01, // Protocol 1.0
+    .bInterfaceSubClass = 0x01,  // DFU
+    .bInterfaceProtocol = 0x01,  // Protocol 1.0
     .iInterface = 5,
     .extra = &sr_dfu_function,
     .extralen = sizeof(sr_dfu_function),
@@ -200,16 +200,15 @@ static const char *usb_strings[] = {
     "Student Robotics",
     "Power Board v4",
     (const char *)SERIALNUM_BOOTLOADER_LOC,
-	"Student Robotics Power Board v4", // Iface 1
-	"Student Robotics Power Board DFU loader", // IFace 2, DFU
+    "Student Robotics Power Board v4",  // Iface 1
+    "Student Robotics Power Board DFU loader",  // IFace 2, DFU
 };
 
 /* Buffer to be used for control requests. */
 uint8_t usbd_control_buffer[128];
 
 static enum usbd_request_return_codes cdcacm_control_request(usbd_device *usbd_dev, struct usb_setup_data *req, uint8_t **buf,
-        uint16_t *len, void (**complete)(usbd_device *usbd_dev, struct usb_setup_data *req))
-{
+        uint16_t *len, void (**complete)(usbd_device *usbd_dev, struct usb_setup_data *req)) {
     (void)complete;
     (void)buf;
     (void)usbd_dev;
@@ -260,8 +259,7 @@ static enum usbd_request_return_codes cdcacm_control_request(usbd_device *usbd_d
 char usb_msg_buffer[USB_MSG_MAXLEN];
 int usb_msg_len = 0;
 
-static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep)
-{
+static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep) {
     (void)ep;
 
     int remaining_len = (USB_MSG_MAXLEN - 1) - usb_msg_len;
@@ -273,13 +271,13 @@ static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep)
         usb_msg_len += len;
         usb_msg_buffer[usb_msg_len] = '\0'; // add null terminator to make it a string
 
-        char* end_of_msg = strchr(usb_msg_buffer, '\n'); // test if \n in buffer
+        char* end_of_msg = strchr(usb_msg_buffer, '\n');  // test if \n in buffer
         char response_buffer[64];
         char* response_ptr = response_buffer;
         int full_response_len = 0;
 
         while (end_of_msg != NULL) {
-            *end_of_msg = '\0'; // replace newline with null terminator
+            *end_of_msg = '\0';  // replace newline with null terminator
             char* carriage_return = strchr(usb_msg_buffer, '\r');
             if (carriage_return) {
                 *carriage_return = '\0';  // remove a \r
@@ -293,7 +291,7 @@ static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep)
             response_ptr += usb_response_len;
 
             usb_msg_len -= msg_len;
-            if (usb_msg_len < 0){
+            if (usb_msg_len < 0) {
                 usb_msg_len = 0;
             }
             if (usb_msg_len > 0) {
@@ -302,7 +300,7 @@ static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep)
             }
 
             // repeat if \n in buffer
-            end_of_msg = strchr(usb_msg_buffer, '\n'); // test if \n in buffer
+            end_of_msg = strchr(usb_msg_buffer, '\n');  // test if \n in buffer
         }
 
         // drop a full buffer without newlines
@@ -316,8 +314,7 @@ static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep)
     }
 }
 
-static void cdcacm_set_config(usbd_device *usbd_dev, uint16_t wValue)
-{
+static void cdcacm_set_config(usbd_device *usbd_dev, uint16_t wValue) {
     (void)wValue;
 
     usbd_ep_setup(usbd_dev, 0x01, USB_ENDPOINT_ATTR_BULK, 64, cdcacm_data_rx_cb);
@@ -334,12 +331,10 @@ static void cdcacm_set_config(usbd_device *usbd_dev, uint16_t wValue)
     clear_led(LED_ERROR);
 }
 
-void usb_init(void)
-{
+void usb_init(void) {
     rcc_periph_clock_enable(RCC_GPIOA);
     gpio_clear(GPIOA, GPIO8);
-    gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_2_MHZ,
-              GPIO_CNF_OUTPUT_PUSHPULL, GPIO8);
+    gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_2_MHZ, GPIO_CNF_OUTPUT_PUSHPULL, GPIO8);
 
     g_usbd_dev = usbd_init(&st_usbfs_v1_usb_driver, &dev, &config, usb_strings, 5, usbd_control_buffer, sizeof(usbd_control_buffer));
     usbd_register_set_config_callback(g_usbd_dev, cdcacm_set_config);
@@ -351,8 +346,7 @@ void usb_init(void)
     gpio_set(GPIOA, GPIO8);  // enable ext USB enable
 }
 
-void usb_deinit(void)
-{
+void usb_deinit(void) {
     // Clear ext USB enable; this will cause a reset for us and the host.
     gpio_clear(GPIOA, GPIO8);
 
@@ -365,7 +359,6 @@ void usb_deinit(void)
     usb_poll();
 }
 
-void usb_poll(void)
-{
+void usb_poll(void) {
     usbd_poll(g_usbd_dev);
 }

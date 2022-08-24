@@ -34,7 +34,7 @@ void adc_init(void) {
     adcx_init(ADC2);
 
     gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_ANALOG, (GPIO0|GPIO1));
-	gpio_set_mode(GPIOC, GPIO_MODE_INPUT, GPIO_CNF_INPUT_ANALOG, GPIO5);
+    gpio_set_mode(GPIOC, GPIO_MODE_INPUT, GPIO_CNF_INPUT_ANALOG, GPIO5);
 }
 
 uint16_t get_adc_measurement(uint8_t channel) {
