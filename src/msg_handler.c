@@ -147,6 +147,8 @@ int parse_msg(char* buf, char* response, int max_len)
             strncat(response, itoa(battery.voltage, temp_str), max_len);
             return strlen(response);
         }
+        strncat(response, "NACK:Unknown battery command", max_len);
+        return strlen(response);
     } else if (strcmp(next_arg, "BTN") == 0) {
         next_arg = strtok(NULL, ":");
         if (next_arg == NULL) {
