@@ -18,6 +18,11 @@ static const uint32_t OUTPUT_PIN[7]  = {GPIO10, GPIO11, GPIO6, GPIO7, GPIO8, GPI
 
 static const uint32_t OUTPUT_CSDIS_PIN[4] = {GPIO0, GPIO1, GPIO2, GPIO3};
 
+// In ms, ADC delay is in steps of 4, batt and reg are in multiples of 20
+uint16_t ADC_OVERCURRENT_DELAY = 0;
+uint16_t BATT_OVERCURRENT_DELAY = 0;
+uint16_t REG_OVERCURRENT_DELAY = 0;
+
 uint8_t overcurrent_delay[8] = {0};
 uint16_t output_current[7] = {0};  // reg value here is unused
 bool output_inhibited[7] = {0};
@@ -165,11 +170,11 @@ void handle_uvlo(void) {
 void detect_overcurrent(void) {
     // Test individual output currents
     for (output_t out=OUT_H0; out <= OUT_L3; out++) {
-        uint16_t current_limit = (out <= OUT_H1)? 20000 : 10000;
+        uint16_t current_limit = (out <= OUT_H1) ? 20000 : 10000;
 
         if (output_current[out] > current_limit) {
             overcurrent_delay[out]++;
-            if (overcurrent_delay[out] >= 1) {
+            if (overcurrent_delay[out] > ADC_OVERCURRENT_DELAY) {
                 // disable channel
                 set_overcurrent(out, true);
             }
@@ -179,7 +184,7 @@ void detect_overcurrent(void) {
     }
     if ((reg_5v.success) && (reg_5v.current > 2000)) {
         overcurrent_delay[OUT_5V]++;
-        if (overcurrent_delay[OUT_5V] >= 1) {
+        if (overcurrent_delay[OUT_5V] > REG_OVERCURRENT_DELAY) {
             // disable channel
             set_overcurrent(OUT_5V, true);
         }
@@ -201,7 +206,7 @@ void detect_overcurrent(void) {
         || ((battery.success) && (battery.current > 30000))
     ) {
         overcurrent_delay[7]++;
-        if (overcurrent_delay[7] >= 1) {
+        if (overcurrent_delay[7] > BATT_OVERCURRENT_DELAY) {
             disable_all_outputs(true);
 
             // Disable systick & USB

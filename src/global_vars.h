@@ -24,3 +24,7 @@ extern int16_t board_temp;
 
 extern bool int_button_pressed;
 extern bool ext_button_pressed;
+
+extern uint16_t ADC_OVERCURRENT_DELAY;
+extern uint16_t BATT_OVERCURRENT_DELAY;
+extern uint16_t REG_OVERCURRENT_DELAY;

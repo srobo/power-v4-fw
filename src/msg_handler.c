@@ -264,6 +264,67 @@ int parse_msg(char* buf, char* response, int max_len)
         ext_button_pressed = false;
         strncat(response, "ACK", max_len);
         return strlen(response);
+    } else if (strcmp(next_arg, "*SYS") == 0) {
+        next_arg = strtok(NULL, ":");
+        if (next_arg == NULL) {
+            strncat(response, "NACK:Missing system command", max_len);
+            return strlen(response);
+        }
+
+        if (strcmp(next_arg, "DELAY_COEFF") == 0) {
+            next_arg = strtok(NULL, ":");
+            if (next_arg == NULL) {
+                strncat(response, "NACK:Missing coefficient command", max_len);
+                return strlen(response);
+            }
+
+            if (strcmp(next_arg, "SET") == 0) {
+                uint16_t new_coeffs[3];
+
+                for(int i=0; i < 3; i++) {
+                    next_arg = strtok(NULL, ":");
+                    if (next_arg == NULL) {
+                        strncat(response, "NACK:Missing coefficient set argument", max_len);
+                        return strlen(response);
+                    }
+
+                    if (isdigit((int)next_arg[0])) {
+                        int coeff = atoi(next_arg);
+
+                        // bounds check value
+                        if (coeff < 0) {
+                            strncat(response, "NACK:Coefficient must be positive", max_len);
+                            return strlen(response);
+                        }
+                        // add value to array
+                        new_coeffs[i] = coeff;
+                    } else {
+                        strncat(response, "NACK:Coefficients must be integers", max_len);
+                        return strlen(response);
+                    }
+                }
+
+                ADC_OVERCURRENT_DELAY = new_coeffs[0];
+                BATT_OVERCURRENT_DELAY = new_coeffs[1];
+                REG_OVERCURRENT_DELAY = new_coeffs[2];
+
+                strncat(response, "ACK", max_len);
+                return strlen(response);
+            } else if (strcmp(next_arg, "GET?") == 0) {
+                strncat(response, itoa(ADC_OVERCURRENT_DELAY, temp_str), max_len);
+                strncat(response, ":", max_len - strlen(response));
+                strncat(response, itoa(BATT_OVERCURRENT_DELAY, temp_str), max_len);
+                strncat(response, ":", max_len - strlen(response));
+                strncat(response, itoa(REG_OVERCURRENT_DELAY, temp_str), max_len);
+                return strlen(response);
+            } else {
+                strncat(response, "NACK:Unknown coefficient command", max_len);
+                return strlen(response);
+            }
+        }
+
+        strncat(response, "NACK:Invalid system command", max_len);
+        return strlen(response);
     } else if (strcmp(next_arg, "ECHO") == 0) {
         next_arg = strtok(NULL, ":");
 
