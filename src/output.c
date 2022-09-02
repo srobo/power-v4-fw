@@ -280,3 +280,23 @@ void usb_reset_callback(void) {
     set_led(LED_RUN);
     set_led(LED_ERROR);
 }
+
+void reset_board(void) {
+    for (uint8_t i = 0; i < 7; i++) {
+        set_overcurrent(i, false);
+        if (i == BRAIN_OUTPUT) {
+            enable_output(i, true);
+        } else {
+            enable_output(i, false);
+        }
+    }
+
+    // Disable LEDs
+    clear_led(LED_RUN);
+    clear_led(LED_ERROR);
+    // Disable buzzer
+    buzzer_stop();
+    // Clear button state
+    int_button_pressed = false;
+    ext_button_pressed = false;
+}

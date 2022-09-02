@@ -23,3 +23,5 @@ void set_overcurrent(output_t out, bool overcurrent);
 void disable_all_outputs(bool disable_brain);
 
 void usb_reset_callback(void);
+
+void reset_board(void);

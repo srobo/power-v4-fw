@@ -254,6 +254,7 @@ static enum usbd_request_return_codes cdcacm_control_request(usbd_device *usbd_d
 }
 
 #define USB_MSG_MAXLEN 64
+#define USB_BUFFER_SIZE 64
 char usb_msg_buffer[USB_MSG_MAXLEN];
 int usb_msg_len = 0;
 
@@ -270,7 +271,7 @@ static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep) {
         usb_msg_buffer[usb_msg_len] = '\0'; // add null terminator to make it a string
 
         char* end_of_msg = strchr(usb_msg_buffer, '\n');  // test if \n in buffer
-        char response_buffer[64];
+        char response_buffer[USB_BUFFER_SIZE];
         char* response_ptr = response_buffer;
         int full_response_len = 0;
 
@@ -283,7 +284,7 @@ static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep) {
 
             int msg_len = end_of_msg - usb_msg_buffer + 1;
 
-            int usb_response_len = parse_msg(usb_msg_buffer, response_ptr, 63 - full_response_len);
+            int usb_response_len = handle_msg(usb_msg_buffer, response_ptr, (USB_BUFFER_SIZE - 1) - full_response_len);
             response_ptr[usb_response_len++] = '\n';  // replace null-terminator with newline
             full_response_len += usb_response_len;
             response_ptr += usb_response_len;
@@ -315,8 +316,8 @@ static void cdcacm_data_rx_cb(usbd_device *usbd_dev, uint8_t ep) {
 static void cdcacm_set_config(usbd_device *usbd_dev, uint16_t wValue) {
     (void)wValue;
 
-    usbd_ep_setup(usbd_dev, 0x01, USB_ENDPOINT_ATTR_BULK, 64, cdcacm_data_rx_cb);
-    usbd_ep_setup(usbd_dev, 0x82, USB_ENDPOINT_ATTR_BULK, 64, NULL);
+    usbd_ep_setup(usbd_dev, 0x01, USB_ENDPOINT_ATTR_BULK, USB_BUFFER_SIZE, cdcacm_data_rx_cb);
+    usbd_ep_setup(usbd_dev, 0x82, USB_ENDPOINT_ATTR_BULK, USB_BUFFER_SIZE, NULL);
     usbd_ep_setup(usbd_dev, 0x83, USB_ENDPOINT_ATTR_INTERRUPT, 16, NULL);
 
     usbd_register_control_callback(

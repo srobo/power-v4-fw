@@ -12,18 +12,26 @@
 
 static char* itoa(int value, char* string);
 
-int parse_msg(char* buf, char* response, int max_len)
-{
-    char temp_str[11] = {0};  // for doing itoa conversions
+static void append_str(char* dest, const char* src, int dest_max_len) {
+    strncat(dest, src, dest_max_len - strlen(dest));
+}
+static char* get_next_arg(char* response, const char* err_msg, int max_len) {
+    char* next_arg = strtok(NULL, ":");
+    if (next_arg == NULL) {
+        strncat(response, err_msg, max_len);
+        return NULL;
+    }
+    return next_arg;
+}
+
+int handle_msg(char* buf, char* response, int max_len) {
+    char temp_str[12] = {0};  // for doing itoa conversions
     response[0] = '\0';  // make a blank string
 
     char* next_arg = strtok(buf, ":");
     if (strcmp(next_arg, "OUT") == 0) {
-        next_arg = strtok(NULL, ":");
-        if (next_arg == NULL) {
-            strncat(response, "NACK:Missing output number", max_len);
-            return strlen(response);
-        }
+        next_arg = get_next_arg(response, "NACK:Missing output number", max_len);
+        if(next_arg == NULL) {return strlen(response);}
 
         int output_num;
 
@@ -31,62 +39,53 @@ int parse_msg(char* buf, char* response, int max_len)
             output_num = atoi(next_arg);
             // bounds check
             if (output_num < 0 || output_num > OUT_5V) {
-                strncat(response, "NACK:Invalid output number", max_len);
+                append_str(response, "NACK:Invalid output number", max_len);
                 return strlen(response);
             }
         } else {
-            strncat(response, "NACK:Missing output number", max_len);
+            append_str(response, "NACK:Missing output number", max_len);
             return strlen(response);
         }
 
-        next_arg = strtok(NULL, ":");
-        if (next_arg == NULL) {
-            strncat(response, "NACK:Missing output command", max_len);
-            return strlen(response);
-        }
+        next_arg = get_next_arg(response, "NACK:Missing output command", max_len);
+        if(next_arg == NULL) {return strlen(response);}
 
         if (strcmp(next_arg, "SET") == 0) {
-            next_arg = strtok(NULL, ":");
-            if (next_arg == NULL) {
-                strncat(response, "NACK:Missing output enable argument", max_len);
-                return strlen(response);
-            }
+            next_arg = get_next_arg(response, "NACK:Missing output enable argument", max_len);
+            if(next_arg == NULL) {return strlen(response);}
 
             // Enable output
             if (next_arg[0] == '1') {
                 enable_output(output_num, true);
 
-                strncat(response, "ACK", max_len);
+                append_str(response, "ACK", max_len);
                 return strlen(response);
             } else if (next_arg[0] == '0') {
                 enable_output(output_num, false);
 
-                strncat(response, "ACK", max_len);
+                append_str(response, "ACK", max_len);
                 return strlen(response);
             }
 
-            strncat(response, "NACK:Invalid output enable argument", max_len);
+            append_str(response, "NACK:Invalid output enable argument", max_len);
             return strlen(response);
         } else if (strcmp(next_arg, "GET?") == 0) {
-            strncat(response, output_enabled(output_num)?"1":"0", max_len);
+            append_str(response, output_enabled(output_num)?"1":"0", max_len);
             return strlen(response);
         } else if (strcmp(next_arg, "I?") == 0) {
             if (output_num == OUT_5V) {
-                strncat(response, itoa(reg_5v.current, temp_str), max_len);
+                append_str(response, itoa(reg_5v.current, temp_str), max_len);
             } else {
-                strncat(response, itoa(output_current[output_num], temp_str), max_len);
+                append_str(response, itoa(output_current[output_num], temp_str), max_len);
             }
             return strlen(response);
         } else {
-            strncat(response, "NACK:Unknown output command", max_len);
+            append_str(response, "NACK:Unknown output command", max_len);
             return strlen(response);
         }
     } else if (strcmp(next_arg, "LED") == 0) {
-        next_arg = strtok(NULL, ":");
-        if (next_arg == NULL) {
-            strncat(response, "NACK:Missing LED name", max_len);
-            return strlen(response);
-        }
+        next_arg = get_next_arg(response, "NACK:Missing LED name", max_len);
+        if(next_arg == NULL) {return strlen(response);}
 
         uint32_t led;
 
@@ -95,78 +94,64 @@ int parse_msg(char* buf, char* response, int max_len)
         } else if (strcmp(next_arg, "ERR") == 0) {
             led = LED_ERROR;
         } else {
-            strncat(response, "NACK:Invalid LED name", max_len);
+            append_str(response, "NACK:Invalid LED name", max_len);
             return strlen(response);
         }
 
-        next_arg = strtok(NULL, ":");
-        if (next_arg == NULL) {
-            strncat(response, "NACK:Missing LED argument", max_len);
-            return strlen(response);
-        }
+        next_arg = get_next_arg(response, "NACK:Missing LED argument", max_len);
+        if(next_arg == NULL) {return strlen(response);}
 
         if (strcmp(next_arg, "SET") == 0) {
-            next_arg = strtok(NULL, ":");
-            if (next_arg == NULL) {
-                strncat(response, "NACK:Missing LED value", max_len);
-                return strlen(response);
-            }
+            next_arg = get_next_arg(response, "NACK:Missing LED value", max_len);
+            if(next_arg == NULL) {return strlen(response);}
 
             if (strcmp(next_arg, "0") == 0) {
                 clear_led(led);
-                strncat(response, "ACK", max_len);
+                append_str(response, "ACK", max_len);
                 return strlen(response);
             } else if (strcmp(next_arg, "1") == 0) {
                 set_led(led);
-                strncat(response, "ACK", max_len);
+                append_str(response, "ACK", max_len);
                 return strlen(response);
             } else if (strcmp(next_arg, "F") == 0) {
                 toggle_led(led);
                 set_led_flash(led);
-                strncat(response, "ACK", max_len);
+                append_str(response, "ACK", max_len);
                 return strlen(response);
             }
 
-            strncat(response, "NACK:Invalid LED value", max_len);
+            append_str(response, "NACK:Invalid LED value", max_len);
             return strlen(response);
         }
-        strncat(response, "NACK:Invalid LED argument", max_len);
+        append_str(response, "NACK:Invalid LED argument", max_len);
         return strlen(response);
     } else if (strcmp(next_arg, "BATT") == 0) {
-        next_arg = strtok(NULL, ":");
-        if (next_arg == NULL) {
-            strncat(response, "NACK:Missing argument", max_len);
-            return strlen(response);
-        }
+        next_arg = get_next_arg(response, "NACK:Missing argument", max_len);
+        if(next_arg == NULL) {return strlen(response);}
+
         if (strcmp(next_arg, "I?") == 0) {
             // Get stored current value
-            strncat(response, itoa(battery.current, temp_str), max_len);
+            append_str(response, itoa(battery.current, temp_str), max_len);
             return strlen(response);
         } else if (strcmp(next_arg, "V?") == 0) {
             // Get stored voltage value
-            strncat(response, itoa(battery.voltage, temp_str), max_len);
+            append_str(response, itoa(battery.voltage, temp_str), max_len);
             return strlen(response);
         }
-        strncat(response, "NACK:Unknown battery command", max_len);
+        append_str(response, "NACK:Unknown battery command", max_len);
         return strlen(response);
     } else if (strcmp(next_arg, "BTN") == 0) {
-        next_arg = strtok(NULL, ":");
-        if (next_arg == NULL) {
-            strncat(response, "NACK:Missing button name", max_len);
-            return strlen(response);
-        }
+        next_arg = get_next_arg(response, "NACK:Missing button name", max_len);
+        if(next_arg == NULL) {return strlen(response);}
 
         if (strcmp(next_arg, "START") == 0) {
-            next_arg = strtok(NULL, ":");
-            if (next_arg == NULL) {
-                strncat(response, "NACK:Missing button command", max_len);
-                return strlen(response);
-            }
+            next_arg = get_next_arg(response, "NACK:Missing button command", max_len);
+            if(next_arg == NULL) {return strlen(response);}
 
             if (strcmp(next_arg, "GET?") == 0) {
-                strncat(response, int_button_pressed?"1":"0", max_len);
-                strncat(response, ":", max_len - strlen(response));
-                strncat(response, ext_button_pressed?"1":"0", max_len - strlen(response));
+                append_str(response, int_button_pressed?"1":"0", max_len);
+                append_str(response, ":", max_len);
+                append_str(response, ext_button_pressed?"1":"0", max_len);
 
                 // Clear button state
                 int_button_pressed = false;
@@ -174,17 +159,14 @@ int parse_msg(char* buf, char* response, int max_len)
                 return strlen(response);
             }
 
-            strncat(response, "NACK:Invalid button command", max_len);
+            append_str(response, "NACK:Invalid button command", max_len);
             return strlen(response);
         }
-        strncat(response, "NACK:Invalid button name", max_len);
+        append_str(response, "NACK:Invalid button name", max_len);
         return strlen(response);
     } else if (strcmp(next_arg, "NOTE") == 0) {
-        next_arg = strtok(NULL, ":");
-        if (next_arg == NULL) {
-            strncat(response, "NACK:Missing note frequency", max_len);
-            return strlen(response);
-        }
+        next_arg = get_next_arg(response, "NACK:Missing note frequency", max_len);
+        if(next_arg == NULL) {return strlen(response);}
 
         int note_freq;
 
@@ -192,19 +174,16 @@ int parse_msg(char* buf, char* response, int max_len)
             note_freq = atoi(next_arg);
             // bounds check
             if (note_freq < 0) {
-                strncat(response, "NACK:Invalid note frequency", max_len);
+                append_str(response, "NACK:Invalid note frequency", max_len);
                 return strlen(response);
             }
         } else {
-            strncat(response, "NACK:Invalid note frequency", max_len);
+            append_str(response, "NACK:Invalid note frequency", max_len);
             return strlen(response);
         }
 
-        next_arg = strtok(NULL, ":");
-        if (next_arg == NULL) {
-            strncat(response, "NACK:Missing note duration", max_len);
-            return strlen(response);
-        }
+        next_arg = get_next_arg(response, "NACK:Missing note duration", max_len);
+        if(next_arg == NULL) {return strlen(response);}
 
         int note_dur;
 
@@ -212,96 +191,68 @@ int parse_msg(char* buf, char* response, int max_len)
             note_dur = atoi(next_arg);
             // bounds check
             if (note_dur < 0) {
-                strncat(response, "NACK:Invalid note duration", max_len);
+                append_str(response, "NACK:Invalid note duration", max_len);
                 return strlen(response);
             }
         } else {
-            strncat(response, "NACK:Invalid note duration", max_len);
+            append_str(response, "NACK:Invalid note duration", max_len);
             return strlen(response);
         }
 
         // Generate note
         buzzer_note(note_freq, note_dur);
 
-        strncat(response, "ACK", max_len);
+        append_str(response, "ACK", max_len);
         return strlen(response);
     } else if (strcmp(next_arg, "*IDN?") == 0) {
-        strncat(response, "Student Robotics:", max_len);
-        strncat(response, BOARD_NAME_SHORT, max_len - strlen(response));
-        strncat(response, ":", max_len - strlen(response));
-        strncat(response, (const char *)SERIALNUM_BOOTLOADER_LOC, max_len - strlen(response));
-        strncat(response, ":", max_len - strlen(response));
-        strncat(response, FW_VER, max_len - strlen(response));
+        append_str(response, "Student Robotics:" BOARD_NAME_SHORT ":", max_len);
+        append_str(response, (const char *)SERIALNUM_BOOTLOADER_LOC, max_len);
+        append_str(response, ":" FW_VER, max_len);
         return strlen(response);
     } else if (strcmp(next_arg, "*STATUS?") == 0) {
         for (output_t out=OUT_H0; out <= OUT_5V; out++) {
-            strncat(response, (output_inhibited[out])?"1,":"0,", max_len - strlen(response));
+            append_str(response, (output_inhibited[out])?"1,":"0,", max_len);
         }
         uint8_t final_char = strlen(response) - 1;
         if (response[final_char] == ',') {  // clear final comma
             response[final_char] = '\0';
         }
-        strncat(response, ":", max_len - strlen(response));
-        strncat(response, itoa(board_temp, temp_str), max_len);
-        strncat(response, ":", max_len - strlen(response));
-        strncat(response, (fan_running()?"1":"0"), max_len);
+        append_str(response, ":", max_len);
+        append_str(response, itoa(board_temp, temp_str), max_len);
+        append_str(response, ":", max_len);
+        append_str(response, (fan_running()?"1":"0"), max_len);
         return strlen(response);
     } else if (strcmp(next_arg, "*RESET") == 0) {
-        for (uint8_t i = 0; i < 7; i++) {
-            set_overcurrent(i, false);
-            if (i == BRAIN_OUTPUT) {
-                enable_output(i, true);
-            } else {
-                enable_output(i, false);
-            }
-        }
-
-        // Disable LEDs
-        clear_led(LED_RUN);
-        clear_led(LED_ERROR);
-        // Disable buzzer
-        buzzer_stop();
-        // Clear button state
-        int_button_pressed = false;
-        ext_button_pressed = false;
-        strncat(response, "ACK", max_len);
+        reset_board();
+        append_str(response, "ACK", max_len);
         return strlen(response);
     } else if (strcmp(next_arg, "*SYS") == 0) {
-        next_arg = strtok(NULL, ":");
-        if (next_arg == NULL) {
-            strncat(response, "NACK:Missing system command", max_len);
-            return strlen(response);
-        }
+        next_arg = get_next_arg(response, "NACK:Missing system command", max_len);
+        if(next_arg == NULL) {return strlen(response);}
 
         if (strcmp(next_arg, "DELAY_COEFF") == 0) {
-            next_arg = strtok(NULL, ":");
-            if (next_arg == NULL) {
-                strncat(response, "NACK:Missing coefficient command", max_len);
-                return strlen(response);
-            }
+            next_arg = get_next_arg(response, "NACK:Missing coefficient command", max_len);
+            if(next_arg == NULL) {return strlen(response);}
 
             if (strcmp(next_arg, "SET") == 0) {
                 uint16_t new_coeffs[3];
 
                 for(int i=0; i < 3; i++) {
-                    next_arg = strtok(NULL, ":");
-                    if (next_arg == NULL) {
-                        strncat(response, "NACK:Missing coefficient set argument", max_len);
-                        return strlen(response);
-                    }
+                    next_arg = get_next_arg(response, "NACK:Missing coefficient set argument", max_len);
+                    if(next_arg == NULL) {return strlen(response);}
 
                     if (isdigit((int)next_arg[0])) {
                         int coeff = atoi(next_arg);
 
                         // bounds check value
                         if (coeff < 0) {
-                            strncat(response, "NACK:Coefficient must be positive", max_len);
+                            append_str(response, "NACK:Coefficient must be positive", max_len);
                             return strlen(response);
                         }
                         // add value to array
                         new_coeffs[i] = coeff;
                     } else {
-                        strncat(response, "NACK:Coefficients must be integers", max_len);
+                        append_str(response, "NACK:Coefficients must be integers", max_len);
                         return strlen(response);
                     }
                 }
@@ -310,43 +261,44 @@ int parse_msg(char* buf, char* response, int max_len)
                 BATT_OVERCURRENT_DELAY = new_coeffs[1];
                 REG_OVERCURRENT_DELAY = new_coeffs[2];
 
-                strncat(response, "ACK", max_len);
+                append_str(response, "ACK", max_len);
                 return strlen(response);
             } else if (strcmp(next_arg, "GET?") == 0) {
-                strncat(response, itoa(ADC_OVERCURRENT_DELAY, temp_str), max_len);
-                strncat(response, ":", max_len - strlen(response));
-                strncat(response, itoa(BATT_OVERCURRENT_DELAY, temp_str), max_len);
-                strncat(response, ":", max_len - strlen(response));
-                strncat(response, itoa(REG_OVERCURRENT_DELAY, temp_str), max_len);
+                append_str(response, itoa(ADC_OVERCURRENT_DELAY, temp_str), max_len);
+                append_str(response, ":", max_len);
+                append_str(response, itoa(BATT_OVERCURRENT_DELAY, temp_str), max_len);
+                append_str(response, ":", max_len);
+                append_str(response, itoa(REG_OVERCURRENT_DELAY, temp_str), max_len);
                 return strlen(response);
             } else {
-                strncat(response, "NACK:Unknown coefficient command", max_len);
+                append_str(response, "NACK:Unknown coefficient command", max_len);
                 return strlen(response);
             }
         }
 
-        strncat(response, "NACK:Invalid system command", max_len);
+        append_str(response, "NACK:Invalid system command", max_len);
         return strlen(response);
     } else if (strcmp(next_arg, "ECHO") == 0) {
         next_arg = strtok(NULL, ":");
 
-        strncat(response, next_arg, max_len);
+        append_str(response, next_arg, max_len);
         return strlen(response);
     } else {
-        strncat(response, "NACK:Unknown command: '", max_len);
-        strncat(response, next_arg, max_len - strlen(response));
-        strncat(response, "'", max_len - strlen(response));
+        append_str(response, "NACK:Unknown command: '", max_len);
+        append_str(response, next_arg, max_len);
+        append_str(response, "'", max_len);
         return strlen(response);
     }
 
     // This should be unreachable
-    strncat(response, "NACK:Unknown error", max_len);
+    append_str(response, "NACK:Unknown error", max_len);
     return strlen(response);
 }
 
 static char* itoa(int value, char* string) {
+    // string must be a buffer of at least 12 chars
     // including stdio.h to get sprintf overflows the rom
-    char tmp[33];
+    char tmp[11];
     char* tmp_ptr = tmp;
     char* sp = string;
     unsigned int digit;
