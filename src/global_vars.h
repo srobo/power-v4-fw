@@ -1,6 +1,7 @@
 #pragma once
 #include "i2c.h"
 
+// Uses 30 nop commands for approximately 36 clocks per loop
 #define delay(ms) do { \
     for (int i = 0; i < ms * 2000; i++) \
         __asm__( \

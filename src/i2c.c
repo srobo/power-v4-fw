@@ -1,11 +1,17 @@
 #include "i2c.h"
 #include "global_vars.h"
 
+// AF bit is set when a byte transfer ends with a NACK
+static inline bool nack_recieved(void) {return I2C_SR1(I2C1) & I2C_SR1_AF;}
+static inline bool i2c_transaction_in_progress(void) {return I2C_SR2(I2C1) & I2C_SR2_BUSY;}
+
 // A timed out I2C device will NACK after receiving a byte
-#define I2C_EXIT_ON_FAILED(x) if(i2c_timed_out) { return x;}
-#define I2C_FAIL_ON_NACK(x) if(I2C_SR1(I2C1) & I2C_SR1_AF) { \
+#define I2C_RETURN_IF_FAILED(x) if(i2c_timed_out) { return x;}
+// The I2C protocol means that every transfer will end with either a NACK or ACK
+// The ACK requires the slave device to be actively participating in the transaction
+#define I2C_FAIL_AND_RETURN_ON_NACK(x) if(nack_recieved()) { \
     i2c_timed_out = true; \
-    if (I2C_SR2(I2C1) & I2C_SR2_BUSY) {i2c_send_stop(I2C1);} return x;}
+    if (i2c_transaction_in_progress()) {i2c_send_stop(I2C1);} return x;}
 
 
 volatile bool i2c_timed_out = false;
@@ -35,7 +41,7 @@ void i2c_init(void) {
 void i2c_start_message(uint8_t addr) {
     uint32_t reg32 __attribute__((unused));
 
-    I2C_EXIT_ON_FAILED();
+    I2C_RETURN_IF_FAILED();
 
     // Send START condition.
     i2c_send_start(I2C1);
@@ -49,35 +55,35 @@ void i2c_start_message(uint8_t addr) {
 
     // Waiting for address to transfer.
     while (!(I2C_SR1(I2C1) & (I2C_SR1_ADDR | I2C_SR1_AF)));
-    I2C_FAIL_ON_NACK();
+    I2C_FAIL_AND_RETURN_ON_NACK();
 
     // Cleaning ADDR condition sequence.
     reg32 = I2C_SR2(I2C1);
 }
 
 void i2c_stop_message(void) {
-    I2C_EXIT_ON_FAILED();
+    I2C_RETURN_IF_FAILED();
 
     // Wait for the data register to be empty or a NACK to be generated.
     while (!(I2C_SR1(I2C1) & (I2C_SR1_TxE | I2C_SR1_AF)));
-    I2C_FAIL_ON_NACK();  /// TODO Is a NACK expected here?
+    I2C_FAIL_AND_RETURN_ON_NACK();  /// TODO Is a NACK expected here?
 
     // Send STOP condition.
     i2c_send_stop(I2C1);
 }
 
 void i2c_send_byte(char c) {
-    I2C_EXIT_ON_FAILED();
+    I2C_RETURN_IF_FAILED();
 
     i2c_send_data(I2C1, c);
     // Wait for byte to complete transferring
     while (!(I2C_SR1(I2C1) & (I2C_SR1_BTF | I2C_SR1_AF)));
-    I2C_FAIL_ON_NACK();
+    I2C_FAIL_AND_RETURN_ON_NACK();
 }
 
 bool i2c_recv_bytes(uint8_t addr, uint8_t* buf, uint8_t len) {
     uint32_t reg32 __attribute__((unused));
-    I2C_EXIT_ON_FAILED(false);
+    I2C_RETURN_IF_FAILED(false);
 
     if (len == 0) {
         return false;
@@ -99,7 +105,7 @@ bool i2c_recv_bytes(uint8_t addr, uint8_t* buf, uint8_t len) {
 
         // Waiting for address to transfer.
         while (!(I2C_SR1(I2C1) & (I2C_SR1_ADDR | I2C_SR1_AF)));
-        I2C_FAIL_ON_NACK(false);
+        I2C_FAIL_AND_RETURN_ON_NACK(false);
 
         // Clear ADDR
         reg32 = I2C_SR2(I2C1);
@@ -108,7 +114,7 @@ bool i2c_recv_bytes(uint8_t addr, uint8_t* buf, uint8_t len) {
 
         // Read the data after the RxNE flag is set.
         while (!(I2C_SR1(I2C1) & (I2C_SR1_RxNE | I2C_SR1_AF)));
-        I2C_FAIL_ON_NACK(false);
+        I2C_FAIL_AND_RETURN_ON_NACK(false);
 
         buf[0] = i2c_get_data(I2C1);
     } else if (len == 2) {
@@ -118,7 +124,7 @@ bool i2c_recv_bytes(uint8_t addr, uint8_t* buf, uint8_t len) {
 
         // Waiting for address to transfer.
         while (!(I2C_SR1(I2C1) & (I2C_SR1_ADDR | I2C_SR1_AF)));
-        I2C_FAIL_ON_NACK(false);
+        I2C_FAIL_AND_RETURN_ON_NACK(false);
 
         // Clear ADDR
         reg32 = I2C_SR2(I2C1);
@@ -128,7 +134,7 @@ bool i2c_recv_bytes(uint8_t addr, uint8_t* buf, uint8_t len) {
 
         // Wait for BTF to be set
         while (!(I2C_SR1(I2C1) & (I2C_SR1_BTF | I2C_SR1_AF)));
-        I2C_FAIL_ON_NACK(false);
+        I2C_FAIL_AND_RETURN_ON_NACK(false);
 
         // Program STOP
         i2c_send_stop(I2C1);
@@ -142,9 +148,10 @@ bool i2c_recv_bytes(uint8_t addr, uint8_t* buf, uint8_t len) {
         // Reset NACK control
         i2c_nack_current(I2C1);
     } else {  /// TODO this locks up
+        // this clause is unused by the code but is added for completeness when doing I2C transactions over 2 bytes long
         // Waiting for address to transfer.
         while (!(I2C_SR1(I2C1) & (I2C_SR1_ADDR | I2C_SR1_AF)));
-        I2C_FAIL_ON_NACK(false);
+        I2C_FAIL_AND_RETURN_ON_NACK(false);
 
         uint8_t rem;
         for (uint8_t i=0; i<len; i++) {
@@ -152,10 +159,10 @@ bool i2c_recv_bytes(uint8_t addr, uint8_t* buf, uint8_t len) {
             if (rem == 3) {
                 // Wait for DataN-2 to be received (RxNE = 1)
                 while (!(I2C_SR1(I2C1) & (I2C_SR1_RxNE | I2C_SR1_AF)));
-                I2C_FAIL_ON_NACK(false);
+                I2C_FAIL_AND_RETURN_ON_NACK(false);
                 // Wait for DataN-1 to be received (BTF = 1)
                 while (!(I2C_SR1(I2C1) & (I2C_SR1_BTF | I2C_SR1_AF)));
-                I2C_FAIL_ON_NACK(false);
+                I2C_FAIL_AND_RETURN_ON_NACK(false);
 
                 // Now DataN-2 is in DR and DataN-1 is in the shift register
                 // Clear ACK bit
@@ -169,21 +176,21 @@ bool i2c_recv_bytes(uint8_t addr, uint8_t* buf, uint8_t len) {
 
                 // Wait for the receive register to not be empty
                 while (!(I2C_SR1(I2C1) & (I2C_SR1_RxNE | I2C_SR1_AF)));
-                I2C_FAIL_ON_NACK(false);
+                I2C_FAIL_AND_RETURN_ON_NACK(false);
 
                 // read byte from DR (DataN-1)
                 buf[i] = i2c_get_data(I2C1);
             } else if (rem == 1) {
                 // Wait for the receive register to not be empty
                 while (!(I2C_SR1(I2C1) & (I2C_SR1_RxNE | I2C_SR1_AF)));
-                I2C_FAIL_ON_NACK(false);
+                I2C_FAIL_AND_RETURN_ON_NACK(false);
 
                 // read byte from DR (DataN)
                 buf[i] = i2c_get_data(I2C1);
             } else {
                 // Wait for the receive register to not be empty
                 while (!(I2C_SR1(I2C1) & (I2C_SR1_RxNE | I2C_SR1_AF)));
-                I2C_FAIL_ON_NACK(false);
+                I2C_FAIL_AND_RETURN_ON_NACK(false);
 
                 // read byte from DR
                 buf[i] = i2c_get_data(I2C1);

@@ -9,7 +9,7 @@ the Start button which is used to start your robot code running.
 
 ## Instructions
 
-Using a posix system, you require `make`, the `arm-none-eabi` toolchain and `git`.
+Using a POSIX system, you require `make`, the `arm-none-eabi` toolchain and `git`.
 Before attempting to build anything initialise all the submodules.
 ```shell
 $ git submodule update --init --recursive
