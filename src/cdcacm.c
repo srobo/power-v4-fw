@@ -31,8 +31,6 @@
 #include "global_vars.h"
 #include "led.h"
 
-#define SERIALNUM_BOOTLOADER_LOC 0x08001FE0
-
 static usbd_device *g_usbd_dev;
 bool re_enter_bootloader = false;
 

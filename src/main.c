@@ -15,8 +15,6 @@
 #include "buzzer.h"
 #include "global_vars.h"
 
-#define REENTER_BOOTLOADER_RENDEZVOUS	0x08001FFC
-
 void init(void);
 void jump_to_bootloader(void);
 
@@ -43,7 +41,7 @@ int main(void) {
             jump_to_bootloader();
         }
         // Reset watchdog after successfully Doing Things
-		iwdg_reset();
+        iwdg_reset();
     }
 }
 
