@@ -237,7 +237,7 @@ void handle_msg(char* buf, char* response, int max_len) {
             if(next_arg == NULL) {return;}
 
             if (strcmp(next_arg, "SET") == 0) {
-                uint16_t new_coeffs[3];
+                uint8_t new_coeffs[3];
 
                 for(int i=0; i < 3; i++) {
                     next_arg = get_next_arg(response, "NACK:Missing coefficient set argument", max_len);
@@ -247,8 +247,8 @@ void handle_msg(char* buf, char* response, int max_len) {
                         unsigned long int coeff = strtoul(next_arg, NULL, 10);
 
                         // bounds check value
-                        if (coeff > UINT16_MAX) {
-                            append_str(response, "NACK:Coefficient must fit in uint16", max_len);
+                        if (coeff > UINT8_MAX) {
+                            append_str(response, "NACK:Coefficient must fit in uint8", max_len);
                             return;
                         }
                         // add value to array
