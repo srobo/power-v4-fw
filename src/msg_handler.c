@@ -35,12 +35,12 @@ void handle_msg(char* buf, char* response, int max_len) {
         next_arg = get_next_arg(response, "NACK:Missing output number", max_len);
         if(next_arg == NULL) {return;}
 
-        int output_num;
+        unsigned long int output_num;
 
         if (isdigit((int)next_arg[0])) {
-            output_num = atoi(next_arg);
+            output_num = strtoul(next_arg, NULL, 10);
             // bounds check
-            if (output_num < 0 || output_num > OUT_5V) {
+            if (output_num > OUT_5V) {
                 append_str(response, "NACK:Invalid output number", max_len);
                 return;
             }
@@ -170,12 +170,12 @@ void handle_msg(char* buf, char* response, int max_len) {
         next_arg = get_next_arg(response, "NACK:Missing note frequency", max_len);
         if(next_arg == NULL) {return;}
 
-        int note_freq;
+        unsigned long int note_freq;
 
         if (isdigit((int)next_arg[0])) {
-            note_freq = atoi(next_arg);
+            note_freq = strtoul(next_arg, NULL, 10);
             // bounds check
-            if (note_freq < 0) {
+            if (note_freq > UINT16_MAX) {
                 append_str(response, "NACK:Invalid note frequency", max_len);
                 return;
             }
@@ -187,12 +187,12 @@ void handle_msg(char* buf, char* response, int max_len) {
         next_arg = get_next_arg(response, "NACK:Missing note duration", max_len);
         if(next_arg == NULL) {return;}
 
-        int note_dur;
+        unsigned long int note_dur;
 
         if (isdigit((int)next_arg[0])) {
-            note_dur = atoi(next_arg);
+            note_dur = strtoul(next_arg, NULL, 10);
             // bounds check
-            if (note_dur < 0) {
+            if (note_dur > UINT32_MAX) {
                 append_str(response, "NACK:Invalid note duration", max_len);
                 return;
             }
@@ -244,17 +244,17 @@ void handle_msg(char* buf, char* response, int max_len) {
                     if(next_arg == NULL) {return;}
 
                     if (isdigit((int)next_arg[0])) {
-                        int coeff = atoi(next_arg);
+                        unsigned long int coeff = strtoul(next_arg, NULL, 10);
 
                         // bounds check value
-                        if (coeff < 0) {
-                            append_str(response, "NACK:Coefficient must be positive", max_len);
+                        if (coeff > UINT16_MAX) {
+                            append_str(response, "NACK:Coefficient must fit in uint16", max_len);
                             return;
                         }
                         // add value to array
                         new_coeffs[i] = coeff;
                     } else {
-                        append_str(response, "NACK:Coefficients must be integers", max_len);
+                        append_str(response, "NACK:Coefficients must be positive integers", max_len);
                         return;
                     }
                 }
