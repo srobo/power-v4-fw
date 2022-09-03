@@ -247,7 +247,7 @@ void handle_msg(char* buf, char* response, int max_len) {
                         unsigned long int coeff = strtoul(next_arg, NULL, 10);
 
                         // bounds check value
-                        if (coeff > UINT8_MAX) {
+                        if (coeff > (UINT8_MAX - 1)) {
                             append_str(response, "NACK:Coefficient must fit in uint8", max_len);
                             return;
                         }
