@@ -11,7 +11,7 @@
 
 typedef struct {
     int16_t voltage;
-    int16_t current;
+    int32_t current;
     bool success;
 } INA219_meas_t;
 
