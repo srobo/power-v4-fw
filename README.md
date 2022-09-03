@@ -40,7 +40,6 @@ The Vendor ID is `1bda` (University of Southampton) and the product ID
 is `0010`.
 
 The Power Board is controlled over USB serial, each command is its own line.
-The list of commands is TBC.
 
 ### Serial Commands
 
