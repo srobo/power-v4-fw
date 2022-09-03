@@ -22,8 +22,10 @@ static const uint32_t OUTPUT_CSDIS_PIN[4] = {GPIO0, GPIO1, GPIO2, GPIO3};
 uint8_t ADC_OVERCURRENT_DELAY = 4;
 uint8_t BATT_OVERCURRENT_DELAY = 20;
 uint8_t REG_OVERCURRENT_DELAY = 20;
+uint8_t UVLO_DELAY = 1;
 
 uint8_t overcurrent_delay[8] = {0};
+uint8_t uvlo_delay = 0;
 uint16_t output_current[7] = {0};  // reg value here is unused
 bool output_inhibited[7] = {0};
 
@@ -144,26 +146,30 @@ void set_overcurrent(output_t out, bool overcurrent) {
 void handle_uvlo(void) {
     // Test if global voltage is below 10.2V
     if ((battery.success) && (battery.voltage < 10200)) {
-        disable_all_outputs(true);
-        set_led(LED_FLAT);
+        uvlo_delay++;
+        if (uvlo_delay > UVLO_DELAY) {
+            disable_all_outputs(true);
+            set_led(LED_FLAT);
 
-        // Disable systick & USB
-        systick_counter_disable();
-        usb_deinit();
+            // Disable systick & USB
+            systick_counter_disable();
+            usb_deinit();
 
-        // Disable fan
-        fan_enable(false);
+            // Disable fan
+            fan_enable(false);
 
-        while (1) {
-            // flash flat LED
-            toggle_led(LED_FLAT);
+            while (1) {
+                // flash flat LED
+                toggle_led(LED_FLAT);
 
-            for (unsigned int j = 0; j < 25; j++) {
-                delay(20);
-                iwdg_reset();
+                for (unsigned int j = 0; j < 25; j++) {
+                    delay(20);
+                    iwdg_reset();
+                }
             }
         }
-
+    } else {
+        uvlo_delay = 0;
     }
 }
 

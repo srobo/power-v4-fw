@@ -237,9 +237,9 @@ void handle_msg(char* buf, char* response, int max_len) {
             if(next_arg == NULL) {return;}
 
             if (strcmp(next_arg, "SET") == 0) {
-                uint8_t new_coeffs[3];
+                uint8_t new_coeffs[4];
 
-                for(int i=0; i < 3; i++) {
+                for(int i=0; i < 4; i++) {
                     next_arg = get_next_arg(response, "NACK:Missing coefficient set argument", max_len);
                     if(next_arg == NULL) {return;}
 
@@ -262,6 +262,7 @@ void handle_msg(char* buf, char* response, int max_len) {
                 ADC_OVERCURRENT_DELAY = new_coeffs[0];
                 BATT_OVERCURRENT_DELAY = new_coeffs[1];
                 REG_OVERCURRENT_DELAY = new_coeffs[2];
+                UVLO_DELAY = new_coeffs[3];
 
                 append_str(response, "ACK", max_len);
                 return;
@@ -271,6 +272,8 @@ void handle_msg(char* buf, char* response, int max_len) {
                 append_str(response, itoa(BATT_OVERCURRENT_DELAY, temp_str), max_len);
                 append_str(response, ":", max_len);
                 append_str(response, itoa(REG_OVERCURRENT_DELAY, temp_str), max_len);
+                append_str(response, ":", max_len);
+                append_str(response, itoa(UVLO_DELAY, temp_str), max_len);
                 return;
             } else {
                 append_str(response, "NACK:Unknown coefficient command", max_len);

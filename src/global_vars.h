@@ -30,3 +30,4 @@ extern bool ext_button_pressed;
 extern uint8_t ADC_OVERCURRENT_DELAY;
 extern uint8_t BATT_OVERCURRENT_DELAY;
 extern uint8_t REG_OVERCURRENT_DELAY;
+extern uint8_t UVLO_DELAY;
