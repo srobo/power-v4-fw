@@ -9,7 +9,7 @@ the Start button which is used to start your robot code running.
 
 ## Instructions
 
-Using a POSIX system, you require `make`, the `arm-none-eabi` toolchain and `git`.
+Using a POSIX system, you require `make`, the `arm-none-eabi` toolchain, `git` and `python3` version 3.7+.
 Before attempting to build anything initialise all the submodules.
 ```shell
 $ git submodule update --init --recursive
@@ -26,6 +26,7 @@ This can be flashed to an attached power board that has a bootloader using:
 ```shell
 $ make -C src dfu
 ```
+To use the `dfu` command you need to install dfu-utils. This is a cross-platform utility.
 
 To build the bootloader, run:
 ```shell
