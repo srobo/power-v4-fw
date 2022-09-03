@@ -223,12 +223,12 @@ static int16_t get_current_offset_value(uint8_t addr) {
     return ina219_offsets[addr & 0xf];
 }
 
-void init_i2c_sensors(void) {
-    init_current_sense(BATTERY_SENSE_ADDR, I_CAL_VAL(0.0005 * 10), INA219_CONF(0b00, 0b1100));  // Use 10mA LSB
-    init_current_sense(REG_SENSE_ADDR, I_CAL_VAL(0.010), INA219_CONF(0b11, 0b1100));
+void init_i2c_sensors(bool calc_offset) {
+    init_current_sense(BATTERY_SENSE_ADDR, I_CAL_VAL(0.0005 * 10), INA219_CONF(0b00, 0b1100), calc_offset);  // Use 10mA LSB
+    init_current_sense(REG_SENSE_ADDR, I_CAL_VAL(0.010), INA219_CONF(0b11, 0b1100), calc_offset);
 }
 
-void init_current_sense(uint8_t addr, uint16_t cal_val, uint16_t conf_val) {
+void init_current_sense(uint8_t addr, uint16_t cal_val, uint16_t conf_val, bool calc_offset) {
     // Program calibration reg (0x05) w/ shunt value
     i2c_start_message(addr);
     i2c_send_byte(0x05);  // calibration reg address
@@ -239,9 +239,11 @@ void init_current_sense(uint8_t addr, uint16_t cal_val, uint16_t conf_val) {
     i2c_send_byte((uint8_t)((conf_val >> 8) & 0xff));
     i2c_send_byte((uint8_t)(conf_val & 0xff));
     i2c_stop_message();
-    // wait for a measurement to be made
-    delay(10);
-    set_current_offset_value(addr);
+    if (calc_offset) {
+        // wait for a measurement to be made
+        delay(10);
+        set_current_offset_value(addr);
+    }
 }
 
 INA219_meas_t measure_current_sense(uint8_t addr) {

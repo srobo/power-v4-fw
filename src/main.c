@@ -59,7 +59,7 @@ void init(void) {
     usb_init();
     led_init();
     i2c_init();
-    init_i2c_sensors();
+    init_i2c_sensors(true);
     button_init();
     fan_init();
     adc_init();

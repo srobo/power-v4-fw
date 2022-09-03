@@ -243,7 +243,7 @@ void detect_overcurrent(void) {
                 if (i2c_timed_out) {
                     // reset watchdog
                     reset_i2c_watchdog();
-                    init_i2c_sensors();
+                    init_i2c_sensors(false);
                 }
                 // Read INA219
                 battery = measure_current_sense(BATTERY_SENSE_ADDR);

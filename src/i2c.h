@@ -26,8 +26,8 @@ bool i2c_recv_bytes(uint8_t addr, uint8_t* buf, uint8_t len);
 #define BATTERY_SENSE_ADDR 0x40
 #define REG_SENSE_ADDR 0x41
 
-void init_i2c_sensors(void);
-void init_current_sense(uint8_t addr, uint16_t cal_val, uint16_t conf_val);
+void init_i2c_sensors(bool calc_offset);
+void init_current_sense(uint8_t addr, uint16_t cal_val, uint16_t conf_val, bool calc_offset);
 INA219_meas_t measure_current_sense(uint8_t addr);
 
 void reset_i2c_watchdog(void);
