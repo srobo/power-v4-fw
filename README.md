@@ -42,6 +42,35 @@ is `0010`.
 The Power Board is controlled over USB serial, each command is its own line.
 The list of commands is TBC.
 
+### Serial Commands
+
+Action | Description | Command | Parameter Description | Return | Return Parameters
+--- | --- | --- | --- | --- | ---
+Identify | Get the board type and version | *IDN? | - | Student Robotics:PBv4B:\<asset tag>:\<software version> | \<asset tag> <br>\<software version>
+Status | Get board status | *STATUS? | - | \<port overcurrents>:\<temp>:\<fan> | \<port overcurrents> - comma seperated list of 1/0s indicating if a port has reached overcurrent e.g. 1,0,0,0,0,0,0 -> \<H0>,\<H1>,\<L0>,\<L1>,\<L2>,\<L3>,\<Reg> -> H0 has overcurrent<br>\<temp> - board temperature in degrees celcius<br>\<fan> - fan is running, int, 0-1
+Reset | Reset board to safe startup state<br>- Turn off all outputs<br>- Reset the lights, turn off buzzer | *RESET | - | ACK | -
+Start button | Detect if the internal and external start button has been pressed since this command was last invoked | BTN:START:GET? | - | \<int start pressed>:\<ext start pressed> | \<pressed> - button pressed, int, 0-1
+enable/disable output | Turn a power board output on or off | OUT:\<n>:SET:\<state> | \<n> port number, int,  0-6<br>\<state> int, 0-1 | ACK | - |
+output on/off state | Get the on/off state for a power board output | OUT:\<n>:GET? | \<n> port number, int, 0-6 | \<state> | \<state> - output state, int, 0-1
+read output current | Read the output current for a single output | OUT:\<n>:I? | \<n> port number, int, 0-6 | \<current> | \<current> - current, int, measured in mA
+read battery voltage | Read the battery voltage | BATT:V? | - | \<voltage> | \<voltage> - battery voltage, measured in mV
+read battery current | Read the global current draw | BATT:I? | - | \<current> | \<current> - current, int, measured in mA
+Run LED | Set Run LED output | LED:RUN:SET:\<value> | \<value> LED value, enum, 0,1,F (flash) | ACK | -
+Error LED | Set Error LED output | LED:ERR:SET:\<value> | \<value> LED value, int, 0,1,F (flash) | ACK | -
+play note | Play note on the power board buzzer<br>Overwrites previous note | NOTE:\<note>:\<dur> | \<note> what note to play, int, 8-10,000Hz<br>\<dur> duration to play, int32, >0ms | ACK | -
+
+The output numbers are:
+
+Num | Output
+--- | ---
+0 | H0
+1 | H1
+2 | L0
+3 | L1
+4 | L2
+5 | L3
+6 | 5V Regulator
+
 ### udev Rule
 
 If you are connecting the Power Board to a Linux computer with udev, the
