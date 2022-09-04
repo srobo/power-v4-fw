@@ -237,14 +237,15 @@ void handle_msg(char* buf, char* response, int max_len) {
             if(next_arg == NULL) {return;}
 
             if (strcmp(next_arg, "SET") == 0) {
-                uint8_t new_coeffs[4];
+                uint8_t new_coeffs[5];
+                uint16_t coeff;
 
-                for(int i=0; i < 4; i++) {
+                for(uint8_t i=0; i < 5; i++) {
                     next_arg = get_next_arg(response, "NACK:Missing coefficient set argument", max_len);
                     if(next_arg == NULL) {return;}
 
                     if (isdigit((int)next_arg[0])) {
-                        unsigned long int coeff = strtoul(next_arg, NULL, 10);
+                        coeff = strtoul(next_arg, NULL, 10);
 
                         // bounds check value
                         if (coeff > (UINT8_MAX - 1)) {
@@ -259,28 +260,13 @@ void handle_msg(char* buf, char* response, int max_len) {
                     }
                 }
 
-                next_arg = get_next_arg(response, "NACK:Missing coefficient set argument", max_len);
-                if(next_arg == NULL) {return;}
-
-                if (isdigit((int)next_arg[0])) {
-                    unsigned long int coeff = strtoul(next_arg, NULL, 10);
-
-                    // bounds check value
-                    if (coeff > (UINT16_MAX - 1)) {
-                        append_str(response, "NACK:Coefficient must fit in uint16", max_len);
-                        return;
-                    }
-                    // add value to array
-                    NEG_CURRENT_DELAY = coeff;
-                } else {
-                    append_str(response, "NACK:Coefficients must be positive integers", max_len);
-                    return;
-                }
-
                 ADC_OVERCURRENT_DELAY = new_coeffs[0];
                 BATT_OVERCURRENT_DELAY = new_coeffs[1];
                 REG_OVERCURRENT_DELAY = new_coeffs[2];
                 UVLO_DELAY = new_coeffs[3];
+
+                coeff = new_coeffs[4];
+                NEG_CURRENT_DELAY = coeff << 6;
 
                 append_str(response, "ACK", max_len);
                 return;
