@@ -11,9 +11,9 @@
 #include <libopencm3/cm3/systick.h>
 #include <libopencm3/cm3/nvic.h>
 
-INA219_meas_t battery = {0};
-INA219_meas_t reg_5v = {0};
-int16_t board_temp = 0;
+volatile INA219_meas_t battery = {0};
+volatile INA219_meas_t reg_5v = {0};
+volatile int16_t board_temp = 0;
 
 uint8_t systick_slow_tick = 0;
 uint16_t systick_temp_tick = 0;

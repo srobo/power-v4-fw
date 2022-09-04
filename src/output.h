@@ -5,8 +5,8 @@
 
 typedef enum {OUT_H0=0, OUT_H1, OUT_L0, OUT_L1, OUT_L2, OUT_L3, OUT_5V} output_t;
 
-extern uint16_t output_current[];
-extern bool output_inhibited[];
+extern volatile uint16_t output_current[];
+extern volatile bool output_inhibited[];
 
 void outputs_init(void);
 

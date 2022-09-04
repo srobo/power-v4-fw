@@ -2,9 +2,9 @@
 
 #include <libopencm3/stm32/gpio.h>
 
-bool led_run_flashing = false;
-bool led_error_flashing = false;
-bool led_flat_flashing = false;
+volatile bool led_run_flashing = false;
+volatile bool led_error_flashing = false;
+volatile bool led_flat_flashing = false;
 
 
 void led_init(void) {

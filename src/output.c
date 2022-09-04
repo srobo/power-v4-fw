@@ -19,15 +19,15 @@ static const uint32_t OUTPUT_PIN[7]  = {GPIO10, GPIO11, GPIO6, GPIO7, GPIO8, GPI
 static const uint32_t OUTPUT_CSDIS_PIN[4] = {GPIO0, GPIO1, GPIO2, GPIO3};
 
 // In ms, ADC delay is in steps of 4, batt and reg are in multiples of 20
-uint8_t ADC_OVERCURRENT_DELAY = 4;
-uint8_t BATT_OVERCURRENT_DELAY = 20;
-uint8_t REG_OVERCURRENT_DELAY = 20;
-uint8_t UVLO_DELAY = 1;
+volatile uint8_t ADC_OVERCURRENT_DELAY = 4;
+volatile uint8_t BATT_OVERCURRENT_DELAY = 20;
+volatile uint8_t REG_OVERCURRENT_DELAY = 20;
+volatile uint8_t UVLO_DELAY = 1;
 
 uint8_t overcurrent_delay[8] = {0};
 uint8_t uvlo_delay = 0;
-uint16_t output_current[7] = {0};  // reg value here is unused
-bool output_inhibited[7] = {0};
+volatile uint16_t output_current[7] = {0};  // reg value here is unused
+volatile bool output_inhibited[7] = {0};
 
 void outputs_init(void) {
     // SMPS

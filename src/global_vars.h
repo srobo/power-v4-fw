@@ -20,14 +20,14 @@
 #define FAN_THRESHOLD 40
 #define BRAIN_OUTPUT OUT_L2
 
-extern INA219_meas_t battery;
-extern INA219_meas_t reg_5v;
-extern int16_t board_temp;
+extern volatile INA219_meas_t battery;
+extern volatile INA219_meas_t reg_5v;
+extern volatile int16_t board_temp;
 
-extern bool int_button_pressed;
-extern bool ext_button_pressed;
+extern volatile bool int_button_pressed;
+extern volatile bool ext_button_pressed;
 
-extern uint8_t ADC_OVERCURRENT_DELAY;
-extern uint8_t BATT_OVERCURRENT_DELAY;
-extern uint8_t REG_OVERCURRENT_DELAY;
-extern uint8_t UVLO_DELAY;
+extern volatile uint8_t ADC_OVERCURRENT_DELAY;
+extern volatile uint8_t BATT_OVERCURRENT_DELAY;
+extern volatile uint8_t REG_OVERCURRENT_DELAY;
+extern volatile uint8_t UVLO_DELAY;
