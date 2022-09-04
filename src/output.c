@@ -23,9 +23,11 @@ volatile uint8_t ADC_OVERCURRENT_DELAY = 4;
 volatile uint8_t BATT_OVERCURRENT_DELAY = 20;
 volatile uint8_t REG_OVERCURRENT_DELAY = 20;
 volatile uint8_t UVLO_DELAY = 1;
+volatile uint16_t NEG_CURRENT_DELAY = 2000;
 
 uint8_t overcurrent_delay[8] = {0};
 uint8_t uvlo_delay = 0;
+uint16_t neg_current_delay = 0;
 volatile uint16_t output_current[7] = {0};  // reg value here is unused
 volatile bool output_inhibited[7] = {0};
 
@@ -143,6 +145,46 @@ void set_overcurrent(output_t out, bool overcurrent) {
     }
 }
 
+static void set_global_overcurrent(void) {
+    disable_all_outputs(true);
+
+    // Disable systick & USB
+    systick_counter_disable();
+    usb_deinit();
+
+    // Enable fan
+    fan_enable(true);
+
+    while (1) {
+        // sound buzzer
+        // buzzer duration is meaningless now systick is stopped
+        buzzer_note(2000, 1000);
+        for (unsigned int j = 0; j < 50; j++) {
+            delay(20);
+            iwdg_reset();
+        }
+
+        // stop buzzer
+        buzzer_stop();
+        for (unsigned int j = 0; j < 25; j++) {
+            delay(20);
+            iwdg_reset();
+        }
+
+        // test battery undervoltage
+        // if watchdog tripped re-init INA219's
+        if (i2c_timed_out) {
+            // reset watchdog
+            reset_i2c_watchdog();
+            init_i2c_sensors(false);
+        }
+        // Read INA219
+        battery = measure_current_sense(BATTERY_SENSE_ADDR);
+        battery.current *= 10;  // convert to 1mA LSB
+        handle_uvlo();
+    }
+}
+
 void handle_uvlo(void) {
     // Test if global voltage is below 10.2V
     if ((battery.success) && (battery.voltage < 10200)) {
@@ -213,46 +255,20 @@ void detect_overcurrent(void) {
     ) {
         overcurrent_delay[7]++;
         if (overcurrent_delay[7] > BATT_OVERCURRENT_DELAY) {
-            disable_all_outputs(true);
-
-            // Disable systick & USB
-            systick_counter_disable();
-            usb_deinit();
-
-            // Enable fan
-            fan_enable(true);
-
-            while (1) {
-                // sound buzzer
-                // buzzer duration is meaningless now systick is stopped
-                buzzer_note(2000, 1000);
-                for (unsigned int j = 0; j < 50; j++) {
-                    delay(20);
-                    iwdg_reset();
-                }
-
-                // stop buzzer
-                buzzer_stop();
-                for (unsigned int j = 0; j < 25; j++) {
-                    delay(20);
-                    iwdg_reset();
-                }
-
-                // test battery undervoltage
-                // if watchdog tripped re-init INA219's
-                if (i2c_timed_out) {
-                    // reset watchdog
-                    reset_i2c_watchdog();
-                    init_i2c_sensors(false);
-                }
-                // Read INA219
-                battery = measure_current_sense(BATTERY_SENSE_ADDR);
-                battery.current *= 10;  // convert to 1mA LSB
-                handle_uvlo();
-            }
+            set_global_overcurrent();
         }
     } else {
         overcurrent_delay[7] = 0;
+    }
+
+    // Test for negative current
+    if ((battery.success) && (battery.current < -1000)) {
+        neg_current_delay++;
+        if (neg_current_delay > NEG_CURRENT_DELAY) {
+            set_global_overcurrent();
+        }
+    } else {
+        neg_current_delay = 0;
     }
 }
 

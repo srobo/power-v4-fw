@@ -31,3 +31,4 @@ extern volatile uint8_t ADC_OVERCURRENT_DELAY;
 extern volatile uint8_t BATT_OVERCURRENT_DELAY;
 extern volatile uint8_t REG_OVERCURRENT_DELAY;
 extern volatile uint8_t UVLO_DELAY;
+extern volatile uint16_t NEG_CURRENT_DELAY;
