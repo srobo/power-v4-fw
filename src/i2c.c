@@ -30,10 +30,8 @@ void i2c_init(void) {
 
     i2c_reset(I2C1);
 
-    // Set APB1 to 14MHz
-    i2c_set_clock_frequency(I2C1, 14);
-    // Configure clocks for 400kHz I2C
-    i2c_set_speed(I2C1, i2c_speed_fm_400k, 14);
+    // Configure clocks for 400kHz I2C & 36MHz PCLK1 clock
+    i2c_set_speed(I2C1, i2c_speed_fm_400k, 36);
 
     i2c_peripheral_enable(I2C1);
 }
