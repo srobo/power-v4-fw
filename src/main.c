@@ -59,6 +59,8 @@ void init(void) {
     usb_init();
     led_init();
     i2c_init();
+    // Make sure all outputs are off before nulling out the I2C sensors
+    disable_all_outputs(true);
     init_i2c_sensors(true);
     button_init();
     fan_init();
