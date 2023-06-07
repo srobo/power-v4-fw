@@ -53,6 +53,11 @@ void handle_msg(char* buf, char* response, int max_len) {
         if(next_arg == NULL) {return;}
 
         if (strcmp(next_arg, "SET") == 0) {
+            // inhibit setting brain port
+            if (output_num == BRAIN_OUTPUT) {
+                append_str(response, "NACK:Brain output cannot be controlled", max_len);
+                return;
+            }
             next_arg = get_next_arg(response, "NACK:Missing output enable argument", max_len);
             if(next_arg == NULL) {return;}
 
@@ -303,6 +308,32 @@ void handle_msg(char* buf, char* response, int max_len) {
                 return;
             } else {
                 append_str(response, "NACK:Unknown coefficient command", max_len);
+                return;
+            }
+        } else if (strcmp(next_arg, "BRAIN") == 0) {
+            next_arg = get_next_arg(response, "NACK:Missing brain command", max_len);
+            if(next_arg == NULL) {return;}
+            if (strcmp(next_arg, "SET") == 0) {
+                next_arg = get_next_arg(response, "NACK:Missing brain enable argument", max_len);
+                if(next_arg == NULL) {return;}
+
+                // Enable output
+                if (next_arg[0] == '1') {
+                    enable_output(BRAIN_OUTPUT, true);
+
+                    append_str(response, "ACK", max_len);
+                    return;
+                } else if (next_arg[0] == '0') {
+                    enable_output(BRAIN_OUTPUT, false);
+
+                    append_str(response, "ACK", max_len);
+                    return;
+                }
+
+                append_str(response, "NACK:Invalid brain enable argument", max_len);
+                return;
+            } else {
+                append_str(response, "NACK:Unknown brain command", max_len);
                 return;
             }
         }
