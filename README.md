@@ -57,7 +57,10 @@ read battery voltage | Read the battery voltage | BATT:V? | - | \<voltage> | \<v
 read battery current | Read the global current draw | BATT:I? | - | \<current> | \<current> - current, int, measured in mA
 Run LED | Set Run LED output | LED:RUN:SET:\<value> | \<value> LED value, enum, 0,1,F (flash) | ACK | -
 Error LED | Set Error LED output | LED:ERR:SET:\<value> | \<value> LED value, int, 0,1,F (flash) | ACK | -
+Get run LED state | Get current Run LED output state | LED:RUN:GET? | - | \<value> | \<value> - LED value, enum, 0,1,F (flash)
+Get error LED state | Get current Error LED output state | LED:ERR:GET? | - | \<value> | \<value> - LED value, enum, 0,1,F (flash)
 play note | Play note on the power board buzzer<br>Overwrites previous note | NOTE:\<note>:\<dur> | \<note> what note to play, int, 8-10,000Hz<br>\<dur> duration to play, int32, >0ms | ACK | -
+get current note |  | NOTE:GET? | - | \<freq>:\<remaining> | \<freq> - current tome frequency in Hz, int<br>\<remaining> - remaining tone duration in ms, int32 <br> Note: Both values are 0 if the buzzer is not running
 
 The output numbers are:
 
