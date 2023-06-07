@@ -14,6 +14,7 @@
 volatile INA219_meas_t battery = {0};
 volatile INA219_meas_t reg_5v = {0};
 volatile int16_t board_temp = 0;
+volatile bool fan_override = false;
 
 uint8_t systick_slow_tick = 0;
 uint16_t systick_temp_tick = 0;
@@ -58,7 +59,7 @@ void sys_tick_handler(void) {
         board_temp = adc_to_temp(get_adc_measurement(TEMP_SENSE_CHANNEL));
 
         // Set fan
-        if(board_temp > FAN_THRESHOLD) {
+        if((board_temp > FAN_THRESHOLD )|| fan_override) {
             fan_enable(true);
         } else if (board_temp < FAN_THRESHOLD) {  // 2 degree hysteresis
             fan_enable(false);

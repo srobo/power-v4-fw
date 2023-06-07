@@ -336,6 +336,31 @@ void handle_msg(char* buf, char* response, int max_len) {
                 append_str(response, "NACK:Unknown brain command", max_len);
                 return;
             }
+        } else if (strcmp(next_arg, "FAN") == 0) {
+            next_arg = get_next_arg(response, "NACK:Missing fan command", max_len);
+            if(next_arg == NULL) {return;}
+            if (strcmp(next_arg, "SET") == 0) {
+                next_arg = get_next_arg(response, "NACK:Missing fan override argument", max_len);
+                if(next_arg == NULL) {return;}
+
+                if (next_arg[0] == '1') {
+                    fan_override = true;
+
+                    append_str(response, "ACK", max_len);
+                    return;
+                } else if (next_arg[0] == '0') {
+                    fan_override = false;
+
+                    append_str(response, "ACK", max_len);
+                    return;
+                }
+
+                append_str(response, "NACK:Invalid fan override argument", max_len);
+                return;
+            } else {
+                append_str(response, "NACK:Unknown fan command", max_len);
+                return;
+            }
         }
 
         append_str(response, "NACK:Invalid system command", max_len);

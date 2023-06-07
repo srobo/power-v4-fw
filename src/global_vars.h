@@ -23,6 +23,7 @@
 extern volatile INA219_meas_t battery;
 extern volatile INA219_meas_t reg_5v;
 extern volatile int16_t board_temp;
+extern volatile bool fan_override;
 
 extern volatile bool int_button_pressed;
 extern volatile bool ext_button_pressed;
