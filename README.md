@@ -49,7 +49,7 @@ Since the serial port is virtual, the baudrate is unused and can be set to any v
 Action | Description | Command | Parameter Description | Return | Return Parameters
 --- | --- | --- | --- | --- | ---
 Identify | Get the board type and version | *IDN? | - | Student Robotics:PBv4B:\<asset tag>:\<software version> | \<asset tag> <br>\<software version>
-Status | Get board status | *STATUS? | - | \<port overcurrents>:\<temp>:\<fan> | \<port overcurrents> - comma seperated list of 1/0s indicating if a port has reached overcurrent e.g. 1,0,0,0,0,0,0 -> \<H0>,\<H1>,\<L0>,\<L1>,\<L2>,\<L3>,\<Reg> -> H0 has overcurrent<br>\<temp> - board temperature in degrees celcius<br>\<fan> - fan is running, int, 0-1
+Status | Get board status | *STATUS? | - | \<port overcurrents>:\<temp>:\<fan>:\<reg voltage> | \<port overcurrents> - comma seperated list of 1/0s indicating if a port has reached overcurrent e.g. 1,0,0,0,0,0,0 -> \<H0>,\<H1>,\<L0>,\<L1>,\<L2>,\<L3>,\<Reg> -> H0 has overcurrent<br>\<temp> - board temperature in degrees celcius<br>\<fan> - fan is running, int, 0-1<br>\<reg voltage> - Voltage of 5 Volt regulator in mV
 Reset | Reset board to safe startup state<br>- Turn off all outputs<br>- Reset the lights, turn off buzzer | *RESET | - | ACK | -
 Start button | Detect if the internal and external start button has been pressed since this command was last invoked | BTN:START:GET? | - | \<int start pressed>:\<ext start pressed> | \<pressed> - button pressed, int, 0-1
 enable/disable output | Turn a power board output on or off | OUT:\<n>:SET:\<state> | \<n> port number, int,  0-6<br>\<state> int, 0-1 | ACK | - |
