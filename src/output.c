@@ -276,7 +276,7 @@ void detect_overcurrent(void) {
 void disable_all_outputs(bool disable_brain) {
     // Inhibit all outputs to prevent them being re-enabled
     for (output_t out=OUT_H0; out <= OUT_5V; out++) {
-        if ((!disable_brain) && (out == OUT_L2)) {continue;}
+        if ((!disable_brain) && (out == BRAIN_OUTPUT)) {continue;}
         _enable_output(out, false);
         output_inhibited[out] = true;
     }
