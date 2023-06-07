@@ -42,6 +42,8 @@ is `0010`.
 
 The Power Board is controlled over USB serial, each command is its own line.
 
+Since the serial port is virtual, the baudrate is unused and can be set to any value.
+
 ### Serial Commands
 
 Action | Description | Command | Parameter Description | Return | Return Parameters
