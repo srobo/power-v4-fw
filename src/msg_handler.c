@@ -243,6 +243,8 @@ void handle_msg(char* buf, char* response, int max_len) {
         append_str(response, itoa(board_temp, temp_str), max_len);
         append_str(response, ":", max_len);
         append_str(response, (fan_running()?"1":"0"), max_len);
+        append_str(response, ":", max_len);
+        append_str(response, itoa(reg_5v.voltage, temp_str), max_len);
         return;
     } else if (strcmp(next_arg, "*RESET") == 0) {
         reset_board();
