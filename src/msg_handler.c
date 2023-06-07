@@ -124,6 +124,21 @@ void handle_msg(char* buf, char* response, int max_len) {
 
             append_str(response, "NACK:Invalid LED value", max_len);
             return;
+        } else if (strcmp(next_arg, "GET?") == 0) {
+            switch(get_led_state(led)) {
+                case 0:
+                    append_str(response, "0", max_len);
+                    return;
+                case 1:
+                    append_str(response, "1", max_len);
+                    return;
+                case 2:
+                    append_str(response, "F", max_len);
+                    return;
+                default:
+                    append_str(response, "NACK:Failed to get pin state", max_len);
+                    return;
+            }
         }
         append_str(response, "NACK:Invalid LED argument", max_len);
         return;
@@ -179,6 +194,11 @@ void handle_msg(char* buf, char* response, int max_len) {
                 append_str(response, "NACK:Invalid note frequency", max_len);
                 return;
             }
+        } else if (strcmp(next_arg, "GET?") == 0) {
+            append_str(response, itoa(buzzer_get_freq(), temp_str), max_len);
+            append_str(response, ":", max_len);
+            append_str(response, itoa(buzzer_remaining(), temp_str), max_len);
+            return;
         } else {
             append_str(response, "NACK:Invalid note frequency", max_len);
             return;
@@ -237,8 +257,8 @@ void handle_msg(char* buf, char* response, int max_len) {
             if(next_arg == NULL) {return;}
 
             if (strcmp(next_arg, "SET") == 0) {
-                uint8_t new_coeffs[5];
-                uint16_t coeff;
+                uint16_t new_coeffs[5];
+                unsigned long coeff;
 
                 for(uint8_t i=0; i < 5; i++) {
                     next_arg = get_next_arg(response, "NACK:Missing coefficient set argument", max_len);
@@ -248,8 +268,8 @@ void handle_msg(char* buf, char* response, int max_len) {
                         coeff = strtoul(next_arg, NULL, 10);
 
                         // bounds check value
-                        if (coeff > (UINT8_MAX - 1)) {
-                            append_str(response, "NACK:Coefficient must fit in uint8", max_len);
+                        if (coeff > (UINT16_MAX - 1)) {
+                            append_str(response, "NACK:Coefficient must fit in uint16", max_len);
                             return;
                         }
                         // add value to array
@@ -264,9 +284,7 @@ void handle_msg(char* buf, char* response, int max_len) {
                 BATT_OVERCURRENT_DELAY = new_coeffs[1];
                 REG_OVERCURRENT_DELAY = new_coeffs[2];
                 UVLO_DELAY = new_coeffs[3];
-
-                coeff = new_coeffs[4];
-                NEG_CURRENT_DELAY = coeff << 6;
+                NEG_CURRENT_DELAY = new_coeffs[4];
 
                 append_str(response, "ACK", max_len);
                 return;

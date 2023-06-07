@@ -27,8 +27,8 @@ extern volatile int16_t board_temp;
 extern volatile bool int_button_pressed;
 extern volatile bool ext_button_pressed;
 
-extern volatile uint8_t ADC_OVERCURRENT_DELAY;
-extern volatile uint8_t BATT_OVERCURRENT_DELAY;
-extern volatile uint8_t REG_OVERCURRENT_DELAY;
-extern volatile uint8_t UVLO_DELAY;
+extern volatile uint16_t ADC_OVERCURRENT_DELAY;
+extern volatile uint16_t BATT_OVERCURRENT_DELAY;
+extern volatile uint16_t REG_OVERCURRENT_DELAY;
+extern volatile uint16_t UVLO_DELAY;
 extern volatile uint16_t NEG_CURRENT_DELAY;
