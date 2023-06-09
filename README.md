@@ -63,6 +63,12 @@ Get run LED state | Get current Run LED output state | LED:RUN:GET? | - | \<valu
 Get error LED state | Get current Error LED output state | LED:ERR:GET? | - | \<value> | \<value> - LED value, enum, 0,1,F (flash)
 play note | Play note on the power board buzzer<br>Overwrites previous note | NOTE:\<note>:\<dur> | \<note> what note to play, int, 8-10,000Hz<br>\<dur> duration to play, int32, >0ms | ACK | -
 get current note |  | NOTE:GET? | - | \<freq>:\<remaining> | \<freq> - current tome frequency in Hz, int<br>\<remaining> - remaining tone duration in ms, int32 <br> Note: Both values are 0 if the buzzer is not running
+Force fan on | Override temperature control and runt the fan continually | *SYS:FAN:SET:\<value> | \<value> Enable/disable fan control override | ACK | - |
+enable/disable brain output | Turn the brain output on or off | *SYS:BRAIN:SET:\<state> | \<state> int, 0-1 | ACK | - |
+Modify overcurrent holdoff periods | | *SYS:DELAY_COEFF:SET:\<adc_oc>:\<batt_oc>:\<reg_oc>:\<uvlo_oc>:\<neg_batt_oc> | \<adc_oc> Holdoff in ms of an overcurrent reading on the individual 12V outputs, uint32<br>\<batt_oc> Holdoff in ms of an overcurrent reading on the global input, uint32<br>\<reg_oc> Holdoff in ms of an overcurrent reading on the 5V regulator output, uint32<br>\<uvlo_oc> Holdoff in ms of an undervoltage reading on the global input, uint32<br>\<neg_batt_oc> Holdoff in ms of a negative overcurrent reading on the global input, uint32 | ACK | - |
+Read current overcurrent holdoff periods | | *SYS:DELAY_COEFF:GET? | - | \<adc_oc>:\<batt_oc>:\<reg_oc>:\<uvlo_oc>:\<neg_batt_oc> |\<adc_oc> Holdoff in ms of an overcurrent reading on the individual 12V outputs, uint32<br>\<batt_oc> Holdoff in ms of an overcurrent reading on the global input, uint32<br>\<reg_oc> Holdoff in ms of an overcurrent reading on the 5V regulator output, uint32<br>\<uvlo_oc> Holdoff in ms of an undervoltage reading on the global input, uint32<br>\<neg_batt_oc> Holdoff in ms of a negative overcurrent reading on the global input, uint32 |
+
+The *SYS commands are for internal use and are not intended for end-users.
 
 The output numbers are:
 
