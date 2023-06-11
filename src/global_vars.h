@@ -18,7 +18,7 @@
 #define BOARD_NAME_SHORT "PBv4B"
 
 #define FAN_THRESHOLD 40
-#define BRAIN_OUTPUT OUT_L2
+#define BRAIN_OUTPUT OUT_5V
 
 extern volatile INA219_meas_t battery;
 extern volatile INA219_meas_t reg_5v;
