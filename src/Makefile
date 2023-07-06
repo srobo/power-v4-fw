@@ -17,7 +17,7 @@
 ## You should have received a copy of the GNU Lesser General Public License
 ## along with this library.  If not, see <http://www.gnu.org/licenses/>.
 ##
-FW_VER ?= 4.4
+FW_VER ?= 4.4.2
 
 # Name of C file with main function
 BINARY = main

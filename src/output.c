@@ -19,15 +19,15 @@ static const uint32_t OUTPUT_PIN[7]  = {GPIO10, GPIO11, GPIO6, GPIO7, GPIO8, GPI
 static const uint32_t OUTPUT_CSDIS_PIN[4] = {GPIO0, GPIO1, GPIO2, GPIO3};
 
 // In ms, ADC delay is in steps of 4, batt and reg are in multiples of 20
-volatile uint8_t ADC_OVERCURRENT_DELAY = 20;
-volatile uint8_t BATT_OVERCURRENT_DELAY = 20;
-volatile uint8_t REG_OVERCURRENT_DELAY = 20;
+volatile uint16_t ADC_OVERCURRENT_DELAY = 100;
+volatile uint16_t BATT_OVERCURRENT_DELAY = 100;
+volatile uint16_t REG_OVERCURRENT_DELAY = 20;
 volatile uint16_t NEG_CURRENT_DELAY = 2000;
-// In samples
-volatile uint8_t UVLO_DELAY = 1;
+// In ms
+volatile uint16_t UVLO_DELAY = 40;
 
-uint8_t overcurrent_delay[8] = {0};
-uint8_t uvlo_delay = 0;
+uint16_t overcurrent_delay[8] = {0};
+uint16_t uvlo_delay = 0;
 uint16_t neg_current_delay = 0;
 volatile uint16_t output_current[7] = {0};  // reg value here is unused
 volatile bool output_inhibited[7] = {0};
@@ -189,7 +189,7 @@ static void set_global_overcurrent(void) {
 void handle_uvlo(void) {
     // Test if global voltage is below 10.2V
     if ((battery.success) && (battery.voltage < 10200)) {
-        uvlo_delay++;
+        uvlo_delay+=20;
         if (uvlo_delay > UVLO_DELAY) {
             disable_all_outputs(true);
             set_led(LED_FLAT);
@@ -276,7 +276,7 @@ void detect_overcurrent(void) {
 void disable_all_outputs(bool disable_brain) {
     // Inhibit all outputs to prevent them being re-enabled
     for (output_t out=OUT_H0; out <= OUT_5V; out++) {
-        if ((!disable_brain) && (out == OUT_L2)) {continue;}
+        if ((!disable_brain) && (out == BRAIN_OUTPUT)) {continue;}
         _enable_output(out, false);
         output_inhibited[out] = true;
     }

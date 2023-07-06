@@ -53,6 +53,11 @@ void handle_msg(char* buf, char* response, int max_len) {
         if(next_arg == NULL) {return;}
 
         if (strcmp(next_arg, "SET") == 0) {
+            // inhibit setting brain port
+            if (output_num == BRAIN_OUTPUT) {
+                append_str(response, "NACK:Brain output cannot be controlled", max_len);
+                return;
+            }
             next_arg = get_next_arg(response, "NACK:Missing output enable argument", max_len);
             if(next_arg == NULL) {return;}
 
@@ -124,6 +129,21 @@ void handle_msg(char* buf, char* response, int max_len) {
 
             append_str(response, "NACK:Invalid LED value", max_len);
             return;
+        } else if (strcmp(next_arg, "GET?") == 0) {
+            switch(get_led_state(led)) {
+                case 0:
+                    append_str(response, "0", max_len);
+                    return;
+                case 1:
+                    append_str(response, "1", max_len);
+                    return;
+                case 2:
+                    append_str(response, "F", max_len);
+                    return;
+                default:
+                    append_str(response, "NACK:Failed to get pin state", max_len);
+                    return;
+            }
         }
         append_str(response, "NACK:Invalid LED argument", max_len);
         return;
@@ -179,6 +199,11 @@ void handle_msg(char* buf, char* response, int max_len) {
                 append_str(response, "NACK:Invalid note frequency", max_len);
                 return;
             }
+        } else if (strcmp(next_arg, "GET?") == 0) {
+            append_str(response, itoa(buzzer_get_freq(), temp_str), max_len);
+            append_str(response, ":", max_len);
+            append_str(response, itoa(buzzer_remaining(), temp_str), max_len);
+            return;
         } else {
             append_str(response, "NACK:Invalid note frequency", max_len);
             return;
@@ -223,6 +248,8 @@ void handle_msg(char* buf, char* response, int max_len) {
         append_str(response, itoa(board_temp, temp_str), max_len);
         append_str(response, ":", max_len);
         append_str(response, (fan_running()?"1":"0"), max_len);
+        append_str(response, ":", max_len);
+        append_str(response, itoa(reg_5v.voltage, temp_str), max_len);
         return;
     } else if (strcmp(next_arg, "*RESET") == 0) {
         reset_board();
@@ -237,8 +264,8 @@ void handle_msg(char* buf, char* response, int max_len) {
             if(next_arg == NULL) {return;}
 
             if (strcmp(next_arg, "SET") == 0) {
-                uint8_t new_coeffs[5];
-                uint16_t coeff;
+                uint16_t new_coeffs[5];
+                unsigned long coeff;
 
                 for(uint8_t i=0; i < 5; i++) {
                     next_arg = get_next_arg(response, "NACK:Missing coefficient set argument", max_len);
@@ -248,8 +275,8 @@ void handle_msg(char* buf, char* response, int max_len) {
                         coeff = strtoul(next_arg, NULL, 10);
 
                         // bounds check value
-                        if (coeff > (UINT8_MAX - 1)) {
-                            append_str(response, "NACK:Coefficient must fit in uint8", max_len);
+                        if (coeff > (UINT16_MAX - 1)) {
+                            append_str(response, "NACK:Coefficient must fit in uint16", max_len);
                             return;
                         }
                         // add value to array
@@ -264,9 +291,7 @@ void handle_msg(char* buf, char* response, int max_len) {
                 BATT_OVERCURRENT_DELAY = new_coeffs[1];
                 REG_OVERCURRENT_DELAY = new_coeffs[2];
                 UVLO_DELAY = new_coeffs[3];
-
-                coeff = new_coeffs[4];
-                NEG_CURRENT_DELAY = coeff << 6;
+                NEG_CURRENT_DELAY = new_coeffs[4];
 
                 append_str(response, "ACK", max_len);
                 return;
@@ -283,6 +308,57 @@ void handle_msg(char* buf, char* response, int max_len) {
                 return;
             } else {
                 append_str(response, "NACK:Unknown coefficient command", max_len);
+                return;
+            }
+        } else if (strcmp(next_arg, "BRAIN") == 0) {
+            next_arg = get_next_arg(response, "NACK:Missing brain command", max_len);
+            if(next_arg == NULL) {return;}
+            if (strcmp(next_arg, "SET") == 0) {
+                next_arg = get_next_arg(response, "NACK:Missing brain enable argument", max_len);
+                if(next_arg == NULL) {return;}
+
+                // Enable output
+                if (next_arg[0] == '1') {
+                    enable_output(BRAIN_OUTPUT, true);
+
+                    append_str(response, "ACK", max_len);
+                    return;
+                } else if (next_arg[0] == '0') {
+                    enable_output(BRAIN_OUTPUT, false);
+
+                    append_str(response, "ACK", max_len);
+                    return;
+                }
+
+                append_str(response, "NACK:Invalid brain enable argument", max_len);
+                return;
+            } else {
+                append_str(response, "NACK:Unknown brain command", max_len);
+                return;
+            }
+        } else if (strcmp(next_arg, "FAN") == 0) {
+            next_arg = get_next_arg(response, "NACK:Missing fan command", max_len);
+            if(next_arg == NULL) {return;}
+            if (strcmp(next_arg, "SET") == 0) {
+                next_arg = get_next_arg(response, "NACK:Missing fan override argument", max_len);
+                if(next_arg == NULL) {return;}
+
+                if (next_arg[0] == '1') {
+                    fan_override = true;
+
+                    append_str(response, "ACK", max_len);
+                    return;
+                } else if (next_arg[0] == '0') {
+                    fan_override = false;
+
+                    append_str(response, "ACK", max_len);
+                    return;
+                }
+
+                append_str(response, "NACK:Invalid fan override argument", max_len);
+                return;
+            } else {
+                append_str(response, "NACK:Unknown fan command", max_len);
                 return;
             }
         }

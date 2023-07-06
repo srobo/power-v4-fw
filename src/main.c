@@ -21,8 +21,9 @@ void jump_to_bootloader(void);
 int main(void) {
     init();
 
-    // Enable brain output
-    enable_output(BRAIN_OUTPUT, true);
+    // Enable brain output, by resetting the board
+    // This will clear the overcurrent flags that the init set
+    reset_board();
 
     // Signal we initialised
     set_led(LED_RUN);
@@ -59,6 +60,9 @@ void init(void) {
     usb_init();
     led_init();
     i2c_init();
+    // Make sure all outputs are off before nulling out the I2C sensors
+    // This will mark all outputs as overcurrent, we'll correct that after the init
+    disable_all_outputs(true);
     init_i2c_sensors(true);
     button_init();
     fan_init();

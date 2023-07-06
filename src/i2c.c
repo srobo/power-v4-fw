@@ -2,14 +2,14 @@
 #include "global_vars.h"
 
 // AF bit is set when a byte transfer ends with a NACK
-static inline bool nack_recieved(void) {return I2C_SR1(I2C1) & I2C_SR1_AF;}
+static inline bool nack_received(void) {return I2C_SR1(I2C1) & I2C_SR1_AF;}
 static inline bool i2c_transaction_in_progress(void) {return I2C_SR2(I2C1) & I2C_SR2_BUSY;}
 
 // A timed out I2C device will NACK after receiving a byte
 #define I2C_RETURN_IF_FAILED(x) if(i2c_timed_out) { return x;}
 // The I2C protocol means that every transfer will end with either a NACK or ACK
-// The ACK requires the slave device to be actively participating in the transaction
-#define I2C_FAIL_AND_RETURN_ON_NACK(x) if(nack_recieved()) { \
+// The ACK requires the target device to be actively participating in the transaction
+#define I2C_FAIL_AND_RETURN_ON_NACK(x) if(nack_received()) { \
     i2c_timed_out = true; \
     if (i2c_transaction_in_progress()) {i2c_send_stop(I2C1);} return x;}
 
@@ -44,7 +44,7 @@ void i2c_start_message(uint8_t addr) {
     // Send START condition.
     i2c_send_start(I2C1);
 
-    // Waiting for START to send and switch to master mode.
+    // Waiting for START to send and switch to controller mode.
     while (!((I2C_SR1(I2C1) & I2C_SR1_SB)
         && (I2C_SR2(I2C1) & (I2C_SR2_MSL | I2C_SR2_BUSY))));
 
@@ -93,7 +93,7 @@ bool i2c_recv_bytes(uint8_t addr, uint8_t* buf, uint8_t len) {
     // Send START condition.
     i2c_send_start(I2C1);
 
-    // Waiting for START to send and switch to master mode.
+    // Waiting for START to send and switch to controller mode.
     while (!((I2C_SR1(I2C1) & I2C_SR1_SB)
         && (I2C_SR2(I2C1) & (I2C_SR2_MSL | I2C_SR2_BUSY))));
 

@@ -87,7 +87,6 @@ void clear_led(uint32_t pin) {
     }
 }
 
-
 void toggle_led(uint32_t pin) {
     switch (pin) {
         case LED_RUN:
@@ -115,6 +114,39 @@ void toggle_led(uint32_t pin) {
         case LED_STATL3:
             gpio_toggle(GPIOB, pin);
             break;
+    }
+}
+
+uint8_t get_led_state(uint32_t pin) {
+    switch (pin) {
+        // active-low LEDs
+        case LED_RUN:
+            if (led_run_flashing) {
+                return 2;
+            }
+            return (gpio_get(GPIOB, pin)?0:1);
+        case LED_ERROR:
+            if (led_error_flashing) {
+                return 2;
+            }
+            return (gpio_get(GPIOB, pin)?0:1);
+        case LED_FLAT:
+            if (led_flat_flashing) {
+                return 2;
+            }
+            return (gpio_get(GPIOD, pin)?0:1);
+
+        // active-high LEDs
+        case LED_STATH0:
+        case LED_STATH1:
+            return (gpio_get(GPIOC, pin)?1:0);
+        case LED_STATL0:
+        case LED_STATL1:
+        case LED_STATL2:
+        case LED_STATL3:
+            return (gpio_get(GPIOB, pin)?1:0);
+        default:
+            return 0;
     }
 }
 

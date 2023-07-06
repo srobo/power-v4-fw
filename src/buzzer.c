@@ -6,6 +6,7 @@
 
 
 volatile uint32_t buzzer_ticks_remaining = 0;
+uint16_t buzzer_frequency = 0;
 
 void buzzer_init(void) {
     // Enable TIM3 clock
@@ -39,6 +40,7 @@ void buzzer_note(uint16_t freq, uint32_t duration) {
 
     // Set timer period for frequency
     timer_set_period(TIM3, (1000000 / 2) / freq);
+    buzzer_frequency = freq;
 
     // Enable timer
     timer_enable_counter(TIM3);
@@ -63,4 +65,15 @@ void buzzer_tick(void) {
             buzzer_stop();
         }
     }
+}
+
+uint16_t buzzer_get_freq(void) {
+    if (buzzer_running()) {
+        return buzzer_frequency;
+    } else {
+        return 0;
+    }
+}
+uint32_t buzzer_remaining(void) {
+    return buzzer_ticks_remaining;
 }
